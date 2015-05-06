@@ -122,9 +122,10 @@ def time_string_distance(time_string_a, time_string_b, sep_string=":"):
 class Date:
     def __init__(self, date_string, sep_string="-"):
         self.__date_number = 0
-        self.__date_string = "1-1-1"
+        self.__date_string = sep_string.join(["1"] * 3)
         self.__sep_string = sep_string
-        self.set_date_string(date_string)
+        if len(date_string) != 0:
+            self.set_date_string(date_string)
 
     def set_date_string(self, date_string):
         self.__date_number = date_string_to_number(date_string, sep_string=self.__sep_string)
@@ -194,9 +195,10 @@ class Date:
 class Time:
     def __init__(self, time_string, sep_string=":"):
         self.__time_number = 0
-        self.__time_string = "0:0:0"
+        self.__time_string = sep_string.join(["0"] * 3)
         self.__sep_string = sep_string
-        self.set_time_string(time_string)
+        if len(time_string) != 0:
+            self.set_time_string(time_string)
 
     def set_time_string(self, time_string):
         self.__time_number = time_string_to_number(time_string, sep_string=self.__sep_string)
@@ -206,6 +208,8 @@ class Time:
         return self.__time_string
 
     def set_time_number(self, time_number):
+        if time_number > 86400:
+            raise Exception("Invalid time number: %d" % time_number)
         self.__time_string = number_to_time_string(time_number, sep_string=self.__sep_string)
         self.__time_number = time_number
 
