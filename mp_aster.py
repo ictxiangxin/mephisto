@@ -1,6 +1,6 @@
 __author__ = 'ict'
 
-from mo_date_time import *
+from mp_date_time import *
 
 date_sep_string = "-"
 time_sep_string = ":"
