@@ -2,14 +2,11 @@ __author__ = 'ict'
 
 from mp_date_time import *
 
-date_sep_string = "-"
-time_sep_string = ":"
-
 
 class Earth:
-    def __init__(self, date_string, time_string):
-        self.__date = Date(date_string)
-        self.__time = Time(time_string)
+    def __init__(self, date_string, time_string, date_sep_string="-", time_sep_string=":"):
+        self.__date = Date(date_string, date_sep_string)
+        self.__time = Time(time_string, time_sep_string)
 
     def get_date_string(self):
         return self.__date.get_date_string()
@@ -22,6 +19,18 @@ class Earth:
 
     def get_time_number(self):
         return self.__time.get_time_number()
+
+    def set_date_sep_string(self, sep_string):
+        self.__date.set_sep_string(sep_string=sep_string)
+
+    def set_time_sep_string(self, sep_string):
+        self.__time.set_sep_string(sep_string=sep_string)
+
+    def get_date_sep_string(self):
+        return self.__date.get_sep_string()
+
+    def get_time_sep_string(self):
+        return self.__time.get_sep_string()
 
     def forward_second(self, s):
         self.__time.forward_second(s)

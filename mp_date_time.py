@@ -109,6 +109,16 @@ def number_to_time_string(number, sep_string=":"):
     return sep_string.join([str(h), str(m), str(s)])
 
 
+def date_string_distance(date_string_a, date_string_b, sep_string="-"):
+    return abs(date_string_to_number(date_string_a, sep_string=sep_string) -
+               date_string_to_number(date_string_b, sep_string=sep_string))
+
+
+def time_string_distance(time_string_a, time_string_b, sep_string=":"):
+    return abs(time_string_to_number(time_string_a, sep_string=sep_string) -
+               time_string_to_number(time_string_b, sep_string=sep_string))
+
+
 class Date:
     def __init__(self, date_string, sep_string="-"):
         self.__date_number = 0
@@ -117,14 +127,14 @@ class Date:
         self.set_date_string(date_string)
 
     def set_date_string(self, date_string):
-        self.__date_number = date_string_to_number(date_string, self.__sep_string)
+        self.__date_number = date_string_to_number(date_string, sep_string=self.__sep_string)
         self.__date_string = date_string
 
     def get_date_string(self):
         return self.__date_string
 
     def set_date_number(self, date_number):
-        self.__date_string = number_to_date_string(date_number, self.__sep_string)
+        self.__date_string = number_to_date_string(date_number, sep_string=self.__sep_string)
         self.__date_number = date_number
 
     def get_date_number(self):
@@ -132,20 +142,20 @@ class Date:
 
     def set_sep_string(self, sep_string):
         self.__sep_string = sep_string
-        self.__date_string = number_to_date_string(self.__date_number, self.__sep_string)
+        self.__date_string = number_to_date_string(self.__date_number, sep_string=self.__sep_string)
 
     def get_sep_string(self):
         return self.__sep_string
 
     def forward_day(self, day):
         self.__date_number += day
-        self.__date_string = number_to_date_string(self.__date_number, self.__sep_string)
+        self.__date_string = number_to_date_string(self.__date_number, sep_string=self.__sep_string)
 
     def backward_day(self, day):
         if self.__date_number < day:
             raise Exception("No more days: %d" % self.__date_number)
         self.__date_number -= day
-        self.__date_string = number_to_date_string(self.__date_number, self.__sep_string)
+        self.__date_string = number_to_date_string(self.__date_number, sep_string=self.__sep_string)
 
     def forward_month(self, month):
         y, m, d = [int(elem) for elem in self.__date_string.split(self.__sep_string)]
@@ -189,14 +199,14 @@ class Time:
         self.set_time_string(time_string)
 
     def set_time_string(self, time_string):
-        self.__time_number = time_string_to_number(time_string, self.__sep_string)
+        self.__time_number = time_string_to_number(time_string, sep_string=self.__sep_string)
         self.__time_string = time_string
 
     def get_time_string(self):
         return self.__time_string
 
     def set_time_number(self, time_number):
-        self.__time_string = number_to_time_string(time_number, self.__sep_string)
+        self.__time_string = number_to_time_string(time_number, sep_string=self.__sep_string)
         self.__time_number = time_number
 
     def get_time_number(self):
