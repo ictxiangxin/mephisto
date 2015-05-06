@@ -1,5 +1,9 @@
 __author__ = 'ict'
 
+import copy
+import math
+from mp_date_time import Date, Time
+
 
 def longitude_string_to_number(longitude_string, sep_string=".", direction_flag=("E", "W")):
     direction = longitude_string[-1]
@@ -91,6 +95,9 @@ class Longitude:
         self.__direction_flag = direction_flag
         self.set_longitude_string(longitude_string)
 
+    def get_longitude_tuple(self):
+        return (int(elem) for elem in self.__longitude_string.split(self.__sep_string))
+
     def set_longitude_string(self, longitude_string):
         self.__longitude_number = longitude_string_to_number(longitude_string,
                                                              sep_string=self.__sep_string,
@@ -165,6 +172,9 @@ class Latitude:
         self.__direction_flag = direction_flag
         self.set_latitude_string(latitude_string)
 
+    def get_latitude_tuple(self):
+        return (int(elem) for elem in self.__latitude_string.split(self.__sep_string))
+
     def set_latitude_string(self, latitude_string):
         self.__latitude_number = latitude_string_to_number(latitude_string,
                                                            sep_string=self.__sep_string,
@@ -231,3 +241,85 @@ class Latitude:
 
     def south_move_degree(self, degree):
         self.south_move_second(degree * 3600)
+
+
+class Location:
+    def __init__(self, longitude=None, latitude=None, sep_string=".", direction_flag=(("E", "W"), ("N", "S"))):
+        if longitude is not None:
+            if isinstance(longitude, str):
+                self.__longitude = Longitude(longitude)
+            elif isinstance(longitude, Longitude):
+                self.__longitude = copy.copy(longitude)
+            else:
+                raise Exception("Invalid longitude type: %s" % str(type(longitude)))
+        else:
+            self.__longitude = None
+        if latitude is not None:
+            if isinstance(latitude, str):
+                self.__latitude = Latitude(latitude)
+            elif isinstance(longitude, Latitude):
+                self.__latitude = copy.copy(latitude)
+            else:
+                raise Exception("Invalid longitude type: %s" % str(type(latitude)))
+        else:
+            self.__latitude = None
+        self.__sep_string = sep_string
+        self.__longitude_direction_flag = direction_flag[0]
+        self.__latitude_direction_flag = direction_flag[-1]
+        self.__time_zone = None
+
+    def set_longitude(self, longitude):
+        if isinstance(longitude, str):
+            self.__longitude = Longitude(longitude)
+        elif isinstance(longitude, Longitude):
+            self.__longitude = copy.deepcopy(longitude)
+        else:
+            raise Exception("Invalid longitude type: %s" % str(type(longitude)))
+
+    def get_longitude(self):
+        return self.__longitude
+
+    def set_latitude(self, latitude):
+        if isinstance(latitude, str):
+            self.__latitude = Latitude(latitude)
+        elif isinstance(latitude, Latitude):
+            self.__latitude = copy.copy(latitude)
+        else:
+            raise Exception("Invalid longitude type: %s" % str(type(latitude)))
+
+    def get_latitude(self):
+        return self.__latitude
+
+    def compute_time_zone(self):
+        if self.__longitude is None:
+            raise Exception("Can not compute time zone: longitude is None")
+        self.__time_zone = int(self.__longitude.get_longitude_number() / 15)
+
+    def get_time_zone(self):
+        if self.__time_zone is None:
+            self.compute_time_zone()
+        return self.__time_zone
+
+    def local_date_time(self, earth):
+        date = Date(earth.get_date_string())
+        time = Time(earth.get_time_string())
+        time_number = time.get_time_number()
+        time_number += self.get_time_zone()
+        if time_number < 0:
+            date.backward_day(1)
+            time_number += 86400
+        elif time_number > 86400:
+            date.forward_day(1)
+            time_number -= 86400
+        time.set_time_number(time_number)
+        return date, time
+
+    def arc_distance(self, target_location):
+        longitude_distance = longitude_number_distance(self.__longitude.get_longitude_number(),
+                                                       target_location.get_longitude().get_longitude_number())
+        latitude_distance = latitude_number_distance(self.__latitude.get_latitude_number(),
+                                                     target_location.get_longitude().get_latitude_number())
+        return (longitude_distance ** 2 + latitude_distance ** 2) ** 0.5 / 3600 / 360 * 2 * math.pi
+
+    def distance(self, target_location):
+        return self.arc_distance(target_location) * 6371000

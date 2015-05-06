@@ -127,6 +127,9 @@ class Date:
         if len(date_string) != 0:
             self.set_date_string(date_string)
 
+    def get_date_tuple(self):
+        return (int(elem) for elem in self.__date_string.split(self.__sep_string))
+
     def set_date_string(self, date_string):
         self.__date_number = date_string_to_number(date_string, sep_string=self.__sep_string)
         self.__date_string = date_string
@@ -199,6 +202,9 @@ class Time:
         self.__sep_string = sep_string
         if len(time_string) != 0:
             self.set_time_string(time_string)
+
+    def get_time_tuple(self):
+        return (int(elem) for elem in self.__time_string.split(self.__sep_string))
 
     def set_time_string(self, time_string):
         self.__time_number = time_string_to_number(time_string, sep_string=self.__sep_string)
