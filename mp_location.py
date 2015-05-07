@@ -87,6 +87,74 @@ def latitude_string_distance(latitude_string_a, latitude_string_b, sep_string=".
     return latitude_number_distance(latitude_number_a, latitude_number_b)
 
 
+def location_arc_distance(location_a, location_b):
+    longitude_distance = longitude_number_distance(location_a.get_longitude().get_longitude_number(),
+                                                   location_b.get_longitude().get_longitude_number())
+    latitude_distance = latitude_number_distance(location_a.get_latitude().get_latitude_number(),
+                                                 location_b.get_latitude().get_latitude_number())
+    return (longitude_distance ** 2 + latitude_distance ** 2) ** 0.5 / 3600 / 360 * 2 * math.pi
+
+
+def location_distance(location_a, location_b):
+    return int(location_arc_distance(location_a, location_b) * 6371393)
+
+
+def location_direction(source_location, target_location):
+    longitude_difference = target_location.get_longitude().get_longitude_number() - source_location.get_longitude().get_longitude_number()
+    if abs(longitude_difference) > 648000:
+        if longitude_difference > 0:
+            longitude_difference -= 1296000
+        else:
+            longitude_difference += 1296000
+    latitude_difference = target_location.get_latitude().get_latitude_number() - source_location.get_latitude().get_latitude_number()
+    return longitude_difference, latitude_difference
+
+
+def location_eight_party_by_direction_tuple(direction_tuple, direction_flag=(("E", "W"), ("N", "S"))):
+    longitude_difference = direction_tuple[0]
+    latitude_difference = direction_tuple[1]
+    if longitude_difference == 0 and latitude_difference == 0:
+        return direction_flag[0][0] + direction_flag[0][-1] + direction_flag[-1][0] + direction_flag[-1][-1]
+    elif longitude_difference == 0:
+        if latitude_difference > 0:
+            return direction_flag[-1][0]
+        else:
+            return direction_flag[-1][-1]
+    elif latitude_difference == 0:
+        if latitude_difference > 0:
+            return direction_flag[0][0]
+        else:
+            return direction_flag[0][-1]
+    else:
+        cot = abs(longitude_difference / latitude_difference)
+        if 0.4142135623730951 <= cot <= 2.414213562373095:
+            direction_str = ""
+            if longitude_difference > 0:
+                direction_str += direction_flag[0][0]
+            else:
+                direction_str += direction_flag[0][-1]
+            if latitude_difference > 0:
+                direction_str += direction_flag[-1][0]
+            else:
+                direction_str += direction_flag[-1][-1]
+            return direction_str
+        elif cot > 2.414213562373095:
+            if longitude_difference > 0:
+                return direction_flag[0][0]
+            else:
+                return direction_flag[0][-1]
+        elif cot < 0.4142135623730951:
+            if latitude_difference > 0:
+                return direction_flag[-1][0]
+            else:
+                return direction_flag[-1][-1]
+
+
+def location_eight_party(source_location, target_location, direction_flag=(("E", "W"), ("N", "S"))):
+    direction_tuple = location_direction(source_location, target_location)
+    return location_eight_party_by_direction_tuple(direction_tuple, direction_flag)
+
+
 class Longitude:
     def __init__(self, longitude_string, sep_string=".", direction_flag=("E", "W")):
         self.__longitude_number = 0
@@ -315,11 +383,13 @@ class Location:
         return date, time
 
     def arc_distance(self, target_location):
-        longitude_distance = longitude_number_distance(self.__longitude.get_longitude_number(),
-                                                       target_location.get_longitude().get_longitude_number())
-        latitude_distance = latitude_number_distance(self.__latitude.get_latitude_number(),
-                                                     target_location.get_longitude().get_latitude_number())
-        return (longitude_distance ** 2 + latitude_distance ** 2) ** 0.5 / 3600 / 360 * 2 * math.pi
+        return location_arc_distance(self, target_location)
 
     def distance(self, target_location):
-        return self.arc_distance(target_location) * 6371000
+        return location_distance(self, target_location)
+
+    def direction(self, target_location):
+        return location_direction(self, target_location)
+
+    def direction_eight_party(self, target_location):
+        return location_eight_party(self, target_location)
