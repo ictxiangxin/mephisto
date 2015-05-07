@@ -7,6 +7,8 @@ class Earth:
     def __init__(self, date_string, time_string, date_sep_string="-", time_sep_string=":"):
         self.__date = Date(date_string, date_sep_string)
         self.__time = Time(time_string, time_sep_string)
+        self.__date_sep_string = date_sep_string
+        self.__time_sep_string = time_sep_string
 
     def get_date_string(self):
         return self.__date.get_date_string()
@@ -67,3 +69,15 @@ class Earth:
 
     def backward_year(self, y):
         self.__date.backward_year(y)
+
+    def spring_equinox(self):
+        y, m, d = self.__date.get_date_tuple()
+        yy = y % 100
+        d = int(yy * 0.2422 + 20.646) - int(yy / 4)
+        m = 3
+        return Date(self.__date_sep_string.join([str(y), str(m), str(d)]))
+
+    def autumnal_equinox(self):
+        date = self.spring_equinox()
+        date.forward_day(186)
+        return date
