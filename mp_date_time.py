@@ -120,12 +120,18 @@ def time_string_distance(time_string_a, time_string_b, sep_string=":"):
 
 
 class Date:
-    def __init__(self, date_string, sep_string="-"):
+    def __init__(self, date, sep_string="-"):
         self.__date_number = 0
         self.__date_string = sep_string.join(["1"] * 3)
         self.__sep_string = sep_string
-        if len(date_string) != 0:
-            self.set_date_string(date_string)
+        if isinstance(date, str):
+            self.set_date_string(date)
+        elif isinstance(date, int):
+            self.set_date_number(date)
+        elif isinstance(date, Date):
+            self.set_date_number(date.get_date_number())
+        else:
+            raise Exception("Invalid date type: %s" % str(type(date)))
 
     def get_date_tuple(self):
         return (int(elem) for elem in self.__date_string.split(self.__sep_string))
@@ -196,12 +202,18 @@ class Date:
 
 
 class Time:
-    def __init__(self, time_string, sep_string=":"):
+    def __init__(self, time, sep_string=":"):
         self.__time_number = 0
         self.__time_string = sep_string.join(["0"] * 3)
         self.__sep_string = sep_string
-        if len(time_string) != 0:
-            self.set_time_string(time_string)
+        if isinstance(time, str):
+            self.set_time_string(time)
+        elif isinstance(time, int):
+            self.set_time_number(time)
+        elif isinstance(time, Time):
+            self.set_time_number(time.get_time_number())
+        else:
+            raise Exception("Invalid time type: %s" % str(type(time)))
 
     def get_time_tuple(self):
         return (int(elem) for elem in self.__time_string.split(self.__sep_string))

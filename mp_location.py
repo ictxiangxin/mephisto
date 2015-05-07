@@ -375,8 +375,8 @@ class Location:
         return self.__time_zone
 
     def local_date_time(self, earth):
-        date = Date(earth.get_date_string())
-        time = Time(earth.get_time_string())
+        date = Date(earth.get_date())
+        time = Time(earth.get_time())
         time_number = time.get_time_number()
         time_number += self.__time_zone
         if time_number < 0:
