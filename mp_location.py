@@ -156,12 +156,17 @@ def location_eight_party(source_location, target_location, direction_flag=(("E",
 
 
 class Longitude:
-    def __init__(self, longitude_string, sep_string=".", direction_flag=("E", "W")):
+    def __init__(self, longitude, sep_string=".", direction_flag=("E", "W")):
         self.__longitude_number = 0
         self.__longitude_string = sep_string.join(["0"] * 3) + direction_flag[0]
         self.__sep_string = sep_string
         self.__direction_flag = direction_flag
-        self.set_longitude_string(longitude_string)
+        if isinstance(longitude, str):
+            self.set_longitude_string(longitude)
+        elif isinstance(longitude, int):
+            self.set_longitude_number(longitude)
+        else:
+            raise Exception("Invalid longitude type: %s" % str(type(longitude)))
 
     def get_longitude_tuple(self):
         return (int(elem) for elem in self.__longitude_string.split(self.__sep_string))
@@ -233,12 +238,17 @@ class Longitude:
 
 
 class Latitude:
-    def __init__(self, latitude_string, sep_string=".", direction_flag=("N", "S")):
+    def __init__(self, latitude, sep_string=".", direction_flag=("N", "S")):
         self.__latitude_number = 0
         self.__latitude_string = sep_string.join(["0"] * 3) + direction_flag[0]
         self.__sep_string = sep_string
         self.__direction_flag = direction_flag
-        self.set_latitude_string(latitude_string)
+        if isinstance(latitude, str):
+            self.set_latitude_string(latitude)
+        elif isinstance(latitude, int):
+            self.set_latitude_number(latitude)
+        else:
+            raise Exception("Invalid latitude type: %s" % str(type(latitude)))
 
     def get_latitude_tuple(self):
         return (int(elem) for elem in self.__latitude_string.split(self.__sep_string))
@@ -327,7 +337,7 @@ class Location:
             self.__latitude = None
 
     def set_longitude(self, longitude):
-        if isinstance(longitude, str):
+        if isinstance(longitude, str) or isinstance(longitude, int):
             self.__longitude = Longitude(longitude)
             self.compute_time_zone()
         elif isinstance(longitude, Longitude):
@@ -340,7 +350,7 @@ class Location:
         return self.__longitude
 
     def set_latitude(self, latitude):
-        if isinstance(latitude, str):
+        if isinstance(latitude, str) or isinstance(latitude, int):
             self.__latitude = Latitude(latitude)
         elif isinstance(latitude, Latitude):
             self.__latitude = copy.copy(latitude)
@@ -389,3 +399,7 @@ class Location:
 
     def direction_eight_party(self, target_location):
         return location_eight_party(self, target_location)
+
+    def noon_sun_height(self, earth):
+        latitude_difference = abs(self.__latitude.get_latitude_number() - earth.get_declination().get_latitude_number())
+        return 324000 - latitude_difference

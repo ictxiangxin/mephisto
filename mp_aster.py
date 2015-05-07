@@ -1,15 +1,18 @@
 __author__ = 'ict'
 
-import copy
 from mp_date_time import *
+from mp_location import *
 
 
 class Earth:
-    def __init__(self, date=None, time=None, date_sep_string="-", time_sep_string=":"):
+    def __init__(self, date=None, time=None, date_sep_string="-", time_sep_string=":", location_sep_string=".", direction_flag=(("E", "W"), ("N", "S"))):
         self.__date_sep_string = date_sep_string
         self.__time_sep_string = time_sep_string
+        self.__location_sep_string = location_sep_string
+        self.__direction_flag = direction_flag
         self.__spring_equinox = None
         self.__autumnal_equinox = None
+        self.__declination = None
         if date is not None:
             self.set_date(date)
         else:
@@ -19,15 +22,18 @@ class Earth:
         else:
             self.__time = None
 
+    def compute_date_time_related_attribute(self):
+        self.__spring_equinox = self.compute_spring_equinox()
+        self.__autumnal_equinox = self.compute_autumnal_equinox()
+        self.__declination = self.compute_declination()
+
     def set_date(self, date):
         if isinstance(date, str):
             self.__date = Date(date, self.__date_sep_string)
-            self.__spring_equinox = self.compute_spring_equinox()
-            self.__autumnal_equinox = self.compute_autumnal_equinox()
+            self.compute_date_time_related_attribute()
         elif isinstance(date, Date):
             self.__date = copy.deepcopy(date)
-            self.__spring_equinox = self.compute_spring_equinox()
-            self.__autumnal_equinox = self.compute_autumnal_equinox()
+            self.compute_date_time_related_attribute()
         else:
             raise Exception("Invalid date type: %s" % str(type(date)))
 
@@ -81,33 +87,27 @@ class Earth:
 
     def forward_day(self, d):
         self.__date.forward_day(d)
-        self.__spring_equinox = self.compute_spring_equinox()
-        self.__autumnal_equinox = self.compute_autumnal_equinox()
+        self.compute_date_time_related_attribute()
 
     def forward_month(self, m):
         self.__date.forward_month(m)
-        self.__spring_equinox = self.compute_spring_equinox()
-        self.__autumnal_equinox = self.compute_autumnal_equinox()
+        self.compute_date_time_related_attribute()
 
     def forward_year(self, y):
         self.__date.forward_year(y)
-        self.__spring_equinox = self.compute_spring_equinox()
-        self.__autumnal_equinox = self.compute_autumnal_equinox()
+        self.compute_date_time_related_attribute()
 
     def backward_day(self, d):
         self.__date.backward_day(d)
-        self.__spring_equinox = self.compute_spring_equinox()
-        self.__autumnal_equinox = self.compute_autumnal_equinox()
+        self.compute_date_time_related_attribute()
 
     def backward_month(self, m):
         self.__date.backward_month(m)
-        self.__spring_equinox = self.compute_spring_equinox()
-        self.__autumnal_equinox = self.compute_autumnal_equinox()
+        self.compute_date_time_related_attribute()
 
     def backward_year(self, y):
         self.__date.backward_year(y)
-        self.__spring_equinox = self.compute_spring_equinox()
-        self.__autumnal_equinox = self.compute_autumnal_equinox()
+        self.compute_date_time_related_attribute()
 
     def compute_spring_equinox(self):
         y, m, d = self.__date.get_date_tuple()
@@ -116,7 +116,26 @@ class Earth:
         m = 3
         return Date(self.__date_sep_string.join([str(y), str(m), str(d)]))
 
+    def get_spring_equinox(self):
+        return self.__spring_equinox
+
     def compute_autumnal_equinox(self):
         date = self.compute_spring_equinox()
         date.forward_day(186)
         return date
+
+    def get_autumnal_equinox(self):
+        return self.__autumnal_equinox
+
+    def compute_declination(self):
+        y, m, d = self.__date.get_date_tuple()
+        ordinal_number = month_to_number(m) + d
+        b = 2 * math.pi * (ordinal_number - 1) / 365
+        delta = 0.006918
+        delta -= 0.399912 * math.cos(b) + 0.006758 * math.cos(2 * b) + 0.002697 * math.cos(3 * b)
+        delta += 0.070257 * math.sin(b) + 0.000907 * math.sin(2 * b) + 0.001480 * math.sin(3 * b)
+        return Latitude(int(648000 / math.pi * delta),
+                        sep_string=self.__location_sep_string, direction_flag=self.__direction_flag[-1])
+
+    def get_declination(self):
+        return self.__declination
