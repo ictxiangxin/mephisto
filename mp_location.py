@@ -313,34 +313,26 @@ class Latitude:
 
 class Location:
     def __init__(self, longitude=None, latitude=None, sep_string=".", direction_flag=(("E", "W"), ("N", "S"))):
-        if longitude is not None:
-            if isinstance(longitude, str):
-                self.__longitude = Longitude(longitude)
-            elif isinstance(longitude, Longitude):
-                self.__longitude = copy.copy(longitude)
-            else:
-                raise Exception("Invalid longitude type: %s" % str(type(longitude)))
-        else:
-            self.__longitude = None
-        if latitude is not None:
-            if isinstance(latitude, str):
-                self.__latitude = Latitude(latitude)
-            elif isinstance(longitude, Latitude):
-                self.__latitude = copy.copy(latitude)
-            else:
-                raise Exception("Invalid longitude type: %s" % str(type(latitude)))
-        else:
-            self.__latitude = None
         self.__sep_string = sep_string
         self.__longitude_direction_flag = direction_flag[0]
         self.__latitude_direction_flag = direction_flag[-1]
         self.__time_zone = None
+        if longitude is not None:
+            self.set_longitude(longitude)
+        else:
+            self.__longitude = None
+        if latitude is not None:
+            self.set_latitude(latitude)
+        else:
+            self.__latitude = None
 
     def set_longitude(self, longitude):
         if isinstance(longitude, str):
             self.__longitude = Longitude(longitude)
+            self.compute_time_zone()
         elif isinstance(longitude, Longitude):
             self.__longitude = copy.deepcopy(longitude)
+            self.compute_time_zone()
         else:
             raise Exception("Invalid longitude type: %s" % str(type(longitude)))
 
@@ -363,16 +355,20 @@ class Location:
             raise Exception("Can not compute time zone: longitude is None")
         self.__time_zone = int(self.__longitude.get_longitude_number() / 15)
 
+    def set_time_zone(self, time_zone_second):
+        if time_zone_second < -43200 or time_zone_second > 43200:
+            raise Exception("Invalid time zone: %d", time_zone_second)
+        self.__time_zone = time_zone_second
+        self.__longitude.set_longitude_number(self.__time_zone * 15)
+
     def get_time_zone(self):
-        if self.__time_zone is None:
-            self.compute_time_zone()
         return self.__time_zone
 
     def local_date_time(self, earth):
         date = Date(earth.get_date_string())
         time = Time(earth.get_time_string())
         time_number = time.get_time_number()
-        time_number += self.get_time_zone()
+        time_number += self.__time_zone
         if time_number < 0:
             date.backward_day(1)
             time_number += 86400

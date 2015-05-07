@@ -231,43 +231,34 @@ class Time:
 
     def forward_second(self, second):
         self.__time_number += second
+        if self.__time_number > 86400:
+            overflow = int(self.__time_number / 86400) + 1
+            self.__time_number %= 86400
+        else:
+            overflow = 0
+        self.__time_number %= 86400
         self.__time_string = number_to_time_string(self.__time_number, sep_string=self.__sep_string)
+        return overflow
 
     def backward_second(self, second):
-        if self.__time_number < second:
-            raise Exception("No more seconds: %d" % self.__time_number)
         self.__time_number -= second
+        if self.__time_number < 0:
+            overflow = int(self.__time_number / 86400) - 1
+            self.__time_number %= 86400
+        else:
+            overflow = 0
+        self.__time_number %= 86400
         self.__time_string = number_to_time_string(self.__time_number, sep_string=self.__sep_string)
+        return overflow
 
     def forward_minute(self, minute):
-        h, m, s = [int(elem) for elem in self.__time_string.split(self.__sep_string)]
-        m += minute
-        h += int(m / 60)
-        m %= 60
-        self.__time_string = self.__sep_string.join([str(h), str(m), str(s)])
-        self.__time_number = time_string_to_number(self.__time_string, sep_string=self.__sep_string)
+        return self.forward_second(minute * 60)
 
     def backward_minute(self, minute):
-        h, m, s = [int(elem) for elem in self.__time_string.split(self.__sep_string)]
-        m += h * 60
-        if m < minute:
-            raise Exception("No more minutes: %d" % m)
-        m -= minute
-        h = int(m / 60)
-        m %= 60
-        self.__time_string = self.__sep_string.join([str(h), str(m), str(s)])
-        self.__time_number = time_string_to_number(self.__time_string, sep_string=self.__sep_string)
+        return self.backward_second(minute * 60)
 
     def forward_hour(self, hour):
-        h, m, s = [int(elem) for elem in self.__time_string.split(self.__sep_string)]
-        h += hour
-        self.__time_string = self.__sep_string.join([str(h), str(m), str(s)])
-        self.__time_number = time_string_to_number(self.__time_string, sep_string=self.__sep_string)
+        return self.forward_second(hour * 3600)
 
     def backward_hour(self, hour):
-        h, m, s = [int(elem) for elem in self.__time_string.split(self.__sep_string)]
-        if h < hour:
-            raise Exception("No more hour: %d" % h)
-        h -= hour
-        self.__time_string = self.__sep_string.join([str(h), str(m), str(s)])
-        self.__time_number = time_string_to_number(self.__time_string, sep_string=self.__sep_string)
+        return self.backward_second(hour * 3600)
