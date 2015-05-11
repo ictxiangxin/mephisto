@@ -119,6 +119,14 @@ def time_string_distance(time_string_a, time_string_b, sep_string=":"):
                time_string_to_number(time_string_b, sep_string=sep_string))
 
 
+def date_distance(date_a, date_b):
+    return abs(date_a.get_date_number() - date_b.get_date_number())
+
+
+def time_distance(time_a, time_b):
+    return abs(time_a.get_time_number() - time_b.get_time_number())
+
+
 class Date:
     def __init__(self, date, sep_string="-"):
         self.__date_number = 0
@@ -242,6 +250,9 @@ class Time:
         return self.__sep_string
 
     def forward_second(self, second):
+        if second < 0:
+            self.backward_second(-second)
+            return
         self.__time_number += second
         if self.__time_number > 86400:
             overflow = int(self.__time_number / 86400) + 1
@@ -253,6 +264,9 @@ class Time:
         return overflow
 
     def backward_second(self, second):
+        if second < 0:
+            self.forward_second(-second)
+            return
         self.__time_number -= second
         if self.__time_number < 0:
             overflow = int(self.__time_number / 86400) - 1

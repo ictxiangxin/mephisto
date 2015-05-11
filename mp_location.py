@@ -171,6 +171,9 @@ class Longitude:
     def get_longitude_tuple(self):
         return (int(elem) for elem in self.__longitude_string.split(self.__sep_string))
 
+    def get_longitude_arc(self):
+        return self.__longitude_number / 1296000 * 2 * math.pi
+
     def set_longitude_string(self, longitude_string):
         self.__longitude_number = longitude_string_to_number(longitude_string,
                                                              sep_string=self.__sep_string,
@@ -253,6 +256,9 @@ class Latitude:
     def get_latitude_tuple(self):
         return (int(elem) for elem in self.__latitude_string.split(self.__sep_string))
 
+    def get_latitude_arc(self):
+        return self.__latitude_number / 1296000 * 2 * math.pi
+
     def set_latitude_string(self, latitude_string):
         self.__latitude_number = latitude_string_to_number(latitude_string,
                                                            sep_string=self.__sep_string,
@@ -326,7 +332,7 @@ class Location:
         self.__sep_string = sep_string
         self.__longitude_direction_flag = direction_flag[0]
         self.__latitude_direction_flag = direction_flag[-1]
-        self.__time_zone = None
+        self.__time_zone = 0
         if longitude is not None:
             self.set_longitude(longitude)
         else:
@@ -371,8 +377,17 @@ class Location:
         self.__time_zone = time_zone_second
         self.__longitude.set_longitude_number(self.__time_zone * 15)
 
+    def set_time_zone_standardized(self, time_zone_standardized):
+        self.set_time_zone(time_zone_standardized * 15 * 3600)
+
     def get_time_zone(self):
         return self.__time_zone
+
+    def get_time_zone_standardized(self):
+        return int(self.__time_zone / 3600 / 15)
+
+    def to_greenwich_mean_time(self, time):
+        time.backward_second(self.get_time_zone())
 
     def local_date_time(self, earth):
         date = Date(earth.get_date())
@@ -403,3 +418,12 @@ class Location:
     def noon_sun_height(self, earth):
         latitude_difference = abs(self.__latitude.get_latitude_number() - earth.get_declination().get_latitude_number())
         return 324000 - latitude_difference
+
+    def sunrise_sunset_local_time(self, earth):
+        declination = earth.get_declination()
+        theta = math.atan(math.tan(declination.get_latitude_arc()) * math.tan(self.get_latitude().get_latitude_arc()))
+        theta += 3.4212671791288e-7 / (math.cos(declination.get_latitude_arc()) ** 2 * math.cos(self.get_latitude().get_latitude_arc()) * math.cos(theta))
+        day_length = int((12 + 2 * theta / (2 * math.pi * 24)) * 3600)
+        sunrise_time = int(43200 - day_length / 2)
+        sunset_time = int(43200 + day_length / 2)
+        return Time(sunrise_time), Time(sunset_time)
