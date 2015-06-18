@@ -2,233 +2,287 @@ __author__ = 'ict'
 
 import re
 
-# L -> E '->' A : F
-# E -> '(' G ')' | A
-# G -> A ',' G | A
-# A -> name '.' name
-# F -> A '(' U ')' | A '(' ')'
-# U -> name ',' U | name
+token_tuple = [
+    ("name",      r"[_a-zA-Z][_a-zA-Z0-9]*"),
+    ("dot",       r"\."),
+    ("bracket_l", r"\("),
+    ("bracket_r", r"\)"),
+    ("toward",    r"\->"),
+    ("by",        r":"),
+    ("end",       r";"),
+    ("separator", r","),
+    ("skip",      r"[ \t]+"),
+    ("newline",   r"\n|\r\n"),
+    ("invalid",   r"."),
+]
+
+token_regrex = "|".join("(?P<%s>%s)" % pair for pair in token_tuple)
+
+terminal_index = {
+    "assign":    0,
+    "bracket_l": 1,
+    "bracket_r": 2,
+    "by":        3,
+    "dot":       4,
+    "end":       5,
+    "name":      6,
+    "separator": 7,
+    "toward":    8,
+    "$":         9,
+}
+
+action_table = [
+    ["e",   "e",   "e",   "e",   "e",   "e",   "s1",  "e",   "e",     "e"],
+    ["e",   "e",   "e",   "e",   "s6",  "e",   "e",   "e",   "e",     "e"],
+    ["e",   "e",   "e",   "e",   "e",   "e",   "e",   "s7",  "s8",    "e"],
+    ["e",   "e",   "e",   "e",   "e",   "e",   "e",   "r9",  "r9",    "e"],
+    ["e",   "e",   "e",   "e",   "e",   "e",   "s1",  "e",   "e",     "a"],
+    ["e",   "e",   "e",   "e",   "e",   "e",   "r12", "e",   "e",   "r12"],
+    ["e",   "e",   "e",   "e",   "e",   "e",   "s10", "e",   "e",     "e"],
+    ["e",   "e",   "e",   "e",   "e",   "e",   "s1",  "e",   "e",     "e"],
+    ["e",   "e",   "e",   "e",   "e",   "e",   "s1",  "e",   "e",     "e"],
+    ["e",   "e",   "e",   "e",   "e",   "e",   "r13", "e",   "e",   "r13"],
+    ["e",   "e",   "r8",  "r8",  "e",   "e",   "e",   "r8",  "r8",    "e"],
+    ["e",   "e",   "e",   "e",   "e",   "e",   "e",   "r10", "r10",   "e"],
+    ["e",   "e",   "e",   "s13", "e",   "e",   "e",   "e",   "e",     "e"],
+    ["e",   "e",   "e",   "e",   "e",   "e",   "s14", "e",   "e",     "e"],
+    ["e",   "s16", "e",   "e",   "e",   "e",   "e",   "e",   "e",     "e"],
+    ["e",   "e",   "e",   "e",   "e",   "s17", "e",   "e",   "e",     "e"],
+    ["e",   "e",   "r4",  "e",   "e",   "e",   "s19", "r4",  "e",     "e"],
+    ["e",   "e",   "e",   "e",   "e",   "e",   "r11", "e",   "e",   "r11"],
+    ["e",   "e",   "r2",  "e",   "e",   "e",   "e",   "r2",  "e",     "e"],
+    ["s23", "e",   "r6",  "e",   "s6",  "e",   "e",   "r6",  "e",     "e"],
+    ["e",   "e",   "r14", "e",   "e",   "e",   "e",   "r14", "e",     "e"],
+    ["e",   "e",   "r5",  "e",   "e",   "e",   "e",   "r5",  "e",     "e"],
+    ["e",   "e",   "s25", "e",   "e",   "e",   "e",   "s24", "e",     "e"],
+    ["e",   "e",   "e",   "e",   "e",   "e",   "s26", "e",   "e",     "e"],
+    ["e",   "e",   "e",   "e",   "e",   "e",   "s19", "e",   "e",     "e"],
+    ["e",   "e",   "e",   "e",   "e",   "r7",  "e",   "e",   "e",     "e"],
+    ["e",   "e",   "r6",  "e",   "s6",  "e",   "e",   "r6",  "e",     "e"],
+    ["e",   "e",   "r1",  "e",   "e",   "e",   "e",   "r1",  "e",     "e"],
+    ["e",   "e",   "r3",  "e",   "e",   "e",   "e",   "r3",  "e",     "e"],
+]
+
+non_terminal_index = {
+    "argument":      0,
+    "argument_list": 1,
+    "data":          2,
+    "function":      3,
+    "item":          4,
+    "item_list":     5,
+    "line":          6,
+    "logic":         7,
+}
+
+goto_table = [
+    [-1, -1, -1, -1, 3,  2,  5,   4],
+    [-1, -1, -1, -1, -1, -1, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1],
+    [-1, -1, -1, -1, 3,  2,  9,  -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1],
+    [-1, -1, -1, -1, 11, -1, -1, -1],
+    [-1, -1, -1, -1, 12, -1, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1],
+    [-1, -1, -1, 15, -1, -1, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1],
+    [18, 22, 20, -1, 21, -1, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1],
+    [-1, -1, 27, -1, 21, -1, -1, -1],
+    [28, -1, 20, -1, 21, -1, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1],
+    [-1, -1, -1, -1, -1, -1, -1, -1],
+]
+
+reduce_symbol_sum = {
+    0:  1,
+    1:  3,
+    2:  1,
+    3:  3,
+    4:  0,
+    5:  1,
+    6:  1,
+    7:  4,
+    8:  3,
+    9:  1,
+    10: 3,
+    11: 6,
+    12: 1,
+    13: 2,
+    14: 1,
+}
+
+reduce_to_non_terminal = {
+    0:  "start",
+    1:  "argument",
+    2:  "argument_list",
+    3:  "argument_list",
+    4:  "argument_list",
+    5:  "data",
+    6:  "data",
+    7:  "function",
+    8:  "item",
+    9:  "item_list",
+    10: "item_list",
+    11: "line",
+    12: "logic",
+    13: "logic",
+    14: "argument",
+}
 
 
-class LogicLanguage:
-    def __init__(self, filename):
-        token_tuple = [
-            ("NAME",      r"[_a-zA-Z]+"),
-            ("MEMBER",    r"\."),
-            ("BRACKET_L", r"\("),
-            ("BRACKET_R", r"\)"),
-            ("TOWARD",    r"\->"),
-            ("FUNCTION",  r":"),
-            ("END",       r";"),
-            ("COMMA",     r","),
-            ("SKIP",      r"[ \t]+"),
-            ("NEWLINE",   r"\n|\r\n"),
-            ("INVALID",   r"."),
-        ]
-        self.__token_regrex = "|".join("(?P<%s>%s)" % pair for pair in token_tuple)
-        self.__action_table = {
-            1: {
-                "TOWARD":    "s5",
-                "BRACKET_L": "s15",
-                "NAME":      "s22",
-            },
-            2: {
-                "TOWARD": "s3",
-            },
-            3: {
-                "NAME": "s25",
-            },
-            4: {
-                "FUNCTION": "s5",
-            },
-            5: {
-                "NAME": "s25",
-            },
-            6: {
-                "END": "s7",
-            },
-            7: {
-                "$": "accept",
-            },
-            8: {
-                "BRACKET_L": "s9",
-            },
-            9: {
-                "NAME":      "s10",
-                "BRACKET_R": "s26"
-            },
-            10: {
-                "BRACKET_R": "r9",
-                "COMMA": "s11",
-            },
-            11: {
-                "NAME": "s10",
-            },
-            12: {
-                "BRACKET_R": "r8",
-            },
-            13: {
-                "BRACKET_R": "s14",
-            },
-            14: {
-                "END": "r7",
-            },
-            15: {
-                "NAME": "s25",
-            },
-            16: {
-                "BRACKET_R": "s18",
-            },
-            17: {
-                "BRACKET_R": "r5",
-                "COMMA":     "s19",
-            },
-            18: {
-                "TOWARD": "r2",
-            },
-            19: {
-                "NAME": "s25",
-            },
-            20: {
-                "BRACKET_R": "r4",
-            },
-            21: {
-                "TOWARD": "r3",
-                "BRACKET_R": "r5",
-                "COMMA": "s19",
-            },
-            22: {
-                "BRACKET_L": "s9",
-                "BRACKET_R": "r9",
-                "COMMA":     "s11",
-                "MEMBER":    "s23",
-            },
-            23: {
-                "NAME": "s24",
-            },
-            24: {
-                "FUNCTION":  "r6",
-                "COMMA":     "r6",
-                "TOWARD":    "r6",
-                "BRACKET_L": "r6",
-                "BRACKET_R": "r6",
-            },
-            25: {
-                "MEMBER": "s23",
-            },
-            26: {
-                "END": "r10",
-            }
-        }
-        self.__goto_table = {
-            1: {
-                "E": 2,
-                "A": 21,
-            },
-            3: {
-                "A": 4,
-            },
-            5: {
-                "A": 8,
-                "F": 6,
-            },
-            9: {
-                "U": 13,
-            },
-            11: {
-                "U": 12,
-            },
-            15: {
-                "A": 17,
-                "G": 16,
-            },
-            19: {
-                "A": 17,
-                "G": 20,
-            },
-        }
-        self.__reduce_number = {
-            2:  3,
-            3:  1,
-            4:  3,
-            5:  1,
-            6:  3,
-            7:  4,
-            8:  3,
-            9:  1,
-            10: 3,
-        }
-        self.__reduce_table = {
-            2:  "E",
-            3:  "E",
-            4:  "G",
-            5:  "G",
-            6:  "A",
-            7:  "F",
-            8:  "U",
-            9:  "U",
-            10: "F",
-        }
-        self.__filename = ""
-        self.parse(filename)
+def parse(filename):
+    with open(filename, "r") as fp:
+        text = fp.read().lower()
+        token_list = tokenize(text)
+        tree_list = grammar_analysis(token_list)
+        for tree in tree_list:
+            print(tree)
 
-    def parse(self, filename):
-        self.__filename = filename
-        with open(filename, "r") as fp:
-            token_list = self.tokenize(fp.read().lower())
-            tree_list = self.grammar_slr(token_list)
-            for tree in tree_list:
-                print(tree)
 
-    def tokenize(self, string):
-        token_list = list()
-        line_number = 1
-        temp_list = list()
-        for one_token in re.finditer(self.__token_regrex, string):
-            token_class = one_token.lastgroup
-            token_string = one_token.group(token_class)
-            if token_class == "SKIP":
+def tokenize(string):
+    token_list = list()
+    line_number = 1
+    for one_token in re.finditer(token_regrex, string):
+        token_class = one_token.lastgroup
+        token_string = one_token.group(token_class)
+        if token_class == "skip":
+            pass
+        elif token_class == "newline":
+            line_number += 1
+        elif token_class == "invalid":
+            raise RuntimeError("[Line: %d] Invalid token: %s" % (line_number, token_string))
+        else:
+            token_list.append((token_class, token_string, line_number))
+    token_list.append(("$", "", line_number))
+    return token_list
+
+
+def grammar_analysis(token_list):
+    logic = []
+    symbol_stack = []
+    one_logic = {}
+    line_start_record = {}
+    stack = [0]
+    token_index = 0
+    while token_index < len(token_list):
+        token = token_list[token_index]
+        token_type = token[0]
+        token_line = token[2]
+        if token_line not in line_start_record:
+            line_start_record[token_line] = token_index
+        now_state = stack[-1]
+        operation = action_table[now_state][terminal_index[token_type]]
+        operation_flag = operation[0]
+        if operation_flag == "e":
+            error_line = token[2]
+            error_code = ""
+            offset = 0
+            for i in range(line_start_record[error_line], len(token_list)):
+                if token_list[i][2] == error_line:
+                    error_code += " " + token_list[i][1]
+                    if i < token_index:
+                        offset += len(token_list[i][1]) + 1
+            error_message_head = "\nGrammar error [line %d]:" % error_line
+            error_message = error_message_head + error_code + "\n"
+            error_message += " " * (len(error_message_head) + offset) + "^" * len(token[1])
+            raise Exception(error_message)
+        elif operation_flag == "s":
+            operation_number = int(operation[1:])
+            stack.append(operation_number)
+            token_index += 1
+            if token_type in ["name"]:
+                symbol_stack.append(token)
+        elif operation_flag == "r":
+            operation_number = int(operation[1:])
+            reduce_sum = reduce_symbol_sum[operation_number]
+            for _ in range(reduce_sum):
+                stack.pop()
+            now_state = stack[-1]
+            now_non_terminal_index = non_terminal_index[reduce_to_non_terminal[operation_number]]
+            goto_next_state = goto_table[now_state][now_non_terminal_index]
+            if goto_next_state == -1:
+                raise Exception("Invalid goto action: state=%d, non-terminal=%d" % (now_state, now_non_terminal_index))
+            stack.append(goto_table[now_state][now_non_terminal_index])
+            if operation_number == 0:
+                # start -> logic
                 pass
-            elif token_class == "NEWLINE":
-                temp_list.append(("$", ""))
-                token_list.append(temp_list)
-                temp_list = list()
-                line_number += 1
-            elif token_class == "INVALID":
-                raise RuntimeError("[Line: %d] Invalid token: %s" % (line_number, token_string))
+            elif operation_number == 1:
+                # argument -> name assign data
+                item = symbol_stack.pop()
+                name = symbol_stack.pop()
+                symbol_stack.append((name, item))
+            elif operation_number == 2:
+                # argument_list -> argument
+                argument = symbol_stack.pop()
+                symbol_stack.append([argument])
+            elif operation_number == 3:
+                # argument_list -> argument_list separator argument
+                argument = symbol_stack.pop()
+                argument_list = symbol_stack.pop()
+                symbol_stack.append(argument_list + [argument])
+            elif operation_number == 4:
+                # argument_list -> ~
+                symbol_stack.append([])
+            elif operation_number == 5:
+                # data -> item
+                pass
+            elif operation_number == 6:
+                # data -> name
+                pass
+            elif operation_number == 7:
+                # function -> name bracket_l argument_list bracket_r
+                argument_list = symbol_stack.pop()
+                name = symbol_stack.pop()
+                symbol_stack.append((name, argument_list))
+            elif operation_number == 8:
+                # item -> name dot name
+                name2 = symbol_stack.pop()
+                name1 = symbol_stack.pop()
+                symbol_stack.append((name1, name2))
+            elif operation_number == 9:
+                # item_list -> item
+                item = symbol_stack.pop()
+                symbol_stack.append([item])
+            elif operation_number == 10:
+                # item_list -> item_list separator item
+                item = symbol_stack.pop()
+                item_list = symbol_stack.pop()
+                symbol_stack.append(item_list + [item])
+            elif operation_number == 11:
+                # line -> item_list toward item by function end
+                function = symbol_stack.pop()
+                item = symbol_stack.pop()
+                item_list = symbol_stack.pop()
+                one_logic["condition"] = item_list
+                one_logic["result"] = item
+                one_logic["function"] = function
+                logic.append(one_logic)
+                one_logic = {}
+            elif operation_number == 12:
+                # logic -> line
+                pass
+            elif operation_number == 13:
+                # logic -> logic line
+                pass
+            elif operation_number == 14:
+                # argument -> data
+                pass
             else:
-                temp_list.append((token_class, token_string))
-        return token_list
-
-    def grammar_slr(self, token_list):
-        tree_list = []
-        for line in token_list:
-            stack = [1]
-            grammar_tree = []
-            token_index = 0
-            while token_index < len(line):
-                op_dict = self.__action_table[stack[-1]]
-                token = line[token_index]
-                if token[0] not in op_dict:
-                    raise Exception("Grammar error: " + " ".join([e[1] for e in line]))
-                op = op_dict[token[0]]
-                if op[0] == "s":
-                    stack.append(int(op[1:]))
-                    grammar_tree.append(token)
-                    token_index += 1
-                elif op[0] == "r":
-                    op_number = int(op[1:])
-                    if op_number not in self.__reduce_number:
-                        raise Exception("SLR error no such reduce: %d" % op_number)
-                    reduce_number = self.__reduce_number[op_number]
-                    reduce_symbol = self.__reduce_table[op_number]
-                    temp_list = list()
-                    for i in range(reduce_number):
-                        temp_list.append(grammar_tree.pop())
-                        stack.pop()
-                    grammar_tree.append((reduce_symbol, temp_list))
-                    stack.append(self.__goto_table[stack[-1]][reduce_symbol])
-                elif op[0] == "a":
-                    tree_list.append(("root", grammar_tree))
-                    break
-        return tree_list
+                raise Exception("Invalid reduce number: %d" % operation_number)
+        elif operation_flag == "a":
+            return logic
+        else:
+            raise Exception("Invalid action: %s" % operation)

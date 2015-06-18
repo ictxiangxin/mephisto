@@ -1,0 +1,32 @@
+start : logic
+      ;
+
+logic : logic line
+      | line
+      ;
+
+line : item_list toward item by function end
+     ;
+
+item_list : item_list separator item
+          | item
+          ;
+
+item : name dot name
+     ;
+
+function : name bracket_l argument_list bracket_r
+         ;
+
+argument_list : argument_list separator argument
+              | argument
+              | ~
+              ;
+
+argument : name assign data
+         | data
+         ;
+
+data : item
+     | name
+     ;

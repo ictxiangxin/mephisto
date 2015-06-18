@@ -1,6 +1,6 @@
-location.longitude -> location.time_zone: location.compute_longitude_by_time_zone();
-Location.time_zone -> location.longitude: location.compute_time_zone_longitude();
-(location.time_zone, earth.time) -> location.local_time: location.get_local_time(earth);
-(location.latitude, earth. declination) -> location.sunrise: location.get_sunrise(earth);
-earth.date -> earth.declination: earth.compute_declination_by_date();
-earth.date -> earth. spring_equinox: earth.compute_sprint_equinox_by_date();
+location.longitude -> location.time_zone: compute_longitude_by_time_zone();
+Location.time_zone -> location.longitude: compute_time_zone_longitude();
+location.time_zone, earth.time -> location.local_time: get_local_time(earth);
+location.latitude, earth. declination -> location.sunrise: get_sunrise(earth);
+earth.date -> earth.declination: compute_declination_by_date();
+earth.date -> earth. spring_equinox: compute_sprint_equinox_by_date();
