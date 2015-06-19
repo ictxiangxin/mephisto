@@ -148,8 +148,7 @@ def parse(filename):
         text = fp.read().lower()
         token_list = tokenize(text)
         tree_list = grammar_analysis(token_list)
-        for tree in tree_list:
-            print(tree)
+        return tree_list
 
 
 def tokenize(string):
@@ -204,7 +203,7 @@ def grammar_analysis(token_list):
             stack.append(operation_number)
             token_index += 1
             if token_type in ["name"]:
-                symbol_stack.append(token)
+                symbol_stack.append(token[1])
         elif operation_flag == "r":
             operation_number = int(operation[1:])
             reduce_sum = reduce_symbol_sum[operation_number]
@@ -286,3 +285,24 @@ def grammar_analysis(token_list):
             return logic
         else:
             raise Exception("Invalid action: %s" % operation)
+
+
+class LogicLanguage:
+    def __init__(self, filename):
+        self.__logic_tree_list = parse(filename)
+        self.__compute = {"location": {}, "earth": {}}
+        for logic_tree in self.__logic_tree_list:
+            condition = logic_tree["condition"]
+            result = logic_tree["result"]
+            function = logic_tree["function"]
+            simple_logic = True
+            object_class = result[0]
+            for each_condition in condition:
+                if object_class != each_condition[0]:
+                    simple_logic = False
+                    break
+            if simple_logic:
+                for each_condition in condition:
+                    if each_condition not in self.__compute[object_class]:
+                        self.__compute[object_class][each_condition[1]] = []
+                    self.__compute[object_class][each_condition[1]].append((function, (cond[1] for cond in condition)))
