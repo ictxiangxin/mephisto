@@ -23,9 +23,9 @@ class Earth:
             self.__time = None
 
     def compute_date_time_related_attribute(self):
-        self.__spring_equinox = self.compute_spring_equinox()
-        self.__autumnal_equinox = self.compute_autumnal_equinox()
-        self.__declination = self.compute_declination()
+        self.__spring_equinox = self._compute_spring_equinox()
+        self.__autumnal_equinox = self._compute_autumnal_equinox()
+        self.__declination = self._compute_declination()
 
     def set_date(self, date):
         if isinstance(date, str):
@@ -109,7 +109,7 @@ class Earth:
         self.__date.backward_year(y)
         self.compute_date_time_related_attribute()
 
-    def compute_spring_equinox(self):
+    def _compute_spring_equinox(self):
         y, m, d = self.__date.get_date_tuple()
         yy = y % 100
         d = int(yy * 0.2422 + 20.646) - int(yy / 4)
@@ -119,15 +119,15 @@ class Earth:
     def get_spring_equinox(self):
         return self.__spring_equinox
 
-    def compute_autumnal_equinox(self):
-        date = self.compute_spring_equinox()
+    def _compute_autumnal_equinox(self):
+        date = self._compute_spring_equinox()
         date.forward_day(186)
         return date
 
     def get_autumnal_equinox(self):
         return self.__autumnal_equinox
 
-    def compute_declination(self):
+    def _compute_declination(self):
         y, m, d = self.__date.get_date_tuple()
         ordinal_number = month_to_number(m) + d
         b = 2 * math.pi * (ordinal_number - 1) / 365

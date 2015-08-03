@@ -303,6 +303,6 @@ class LogicLanguage:
                     break
             if simple_logic:
                 for each_condition in condition:
-                    if each_condition not in self.__compute[object_class]:
+                    if each_condition[1] not in self.__compute[object_class]:
                         self.__compute[object_class][each_condition[1]] = []
                     self.__compute[object_class][each_condition[1]].append((function, (cond[1] for cond in condition)))

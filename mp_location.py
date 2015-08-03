@@ -333,6 +333,7 @@ class Location:
         self.__longitude_direction_flag = direction_flag[0]
         self.__latitude_direction_flag = direction_flag[-1]
         self.__time_zone = 0
+        self.__local_time = 0
         if longitude is not None:
             self.set_longitude(longitude)
         else:
@@ -342,13 +343,19 @@ class Location:
         else:
             self.__latitude = None
 
+    def compute_longitude_related_attribute(self):
+        self.__time_zone = self._compute_time_zone()
+
+    def compute_time_zone_related_attribute(self):
+        self.__longitude.set_longitude_number(self.__time_zone * 15)
+
     def set_longitude(self, longitude):
         if isinstance(longitude, str) or isinstance(longitude, int):
             self.__longitude = Longitude(longitude)
-            self.compute_time_zone()
+            self.compute_longitude_related_attribute()
         elif isinstance(longitude, Longitude):
             self.__longitude = copy.deepcopy(longitude)
-            self.compute_time_zone()
+            self.compute_longitude_related_attribute()
         else:
             raise Exception("Invalid longitude type: %s" % str(type(longitude)))
 
@@ -366,16 +373,16 @@ class Location:
     def get_latitude(self):
         return self.__latitude
 
-    def compute_time_zone(self):
+    def _compute_time_zone(self):
         if self.__longitude is None:
             raise Exception("Can not compute time zone: longitude is None")
-        self.__time_zone = int(self.__longitude.get_longitude_number() / 15)
+        return int(self.__longitude.get_longitude_number() / 15)
 
     def set_time_zone(self, time_zone_second):
         if time_zone_second < -43200 or time_zone_second > 43200:
-            raise Exception("Invalid time zone: %d", time_zone_second)
+            raise Exception("Invalid time zone: %d" % time_zone_second)
         self.__time_zone = time_zone_second
-        self.__longitude.set_longitude_number(self.__time_zone * 15)
+        self.compute_time_zone_related_attribute()
 
     def set_time_zone_standardized(self, time_zone_standardized):
         self.set_time_zone(time_zone_standardized * 15 * 3600)
@@ -383,13 +390,21 @@ class Location:
     def get_time_zone(self):
         return self.__time_zone
 
-    def get_time_zone_standardized(self):
+    def set_local_time(self, time):
+        if not isinstance(time, "Time"):
+            raise Exception("Must input Time instance: %s" % str(type(time)))
+        self.__local_time = copy.copy(time)
+
+    def get_local_time(self):
+        return self.__local_time
+
+    def compute_time_zone_standardized(self):
         return int(self.__time_zone / 3600 / 15)
 
-    def to_greenwich_mean_time(self, time):
+    def compute_greenwich_mean_time(self, time):
         time.backward_second(self.get_time_zone())
 
-    def local_date_time(self, earth):
+    def compute_local_date_time(self, earth):
         date = Date(earth.get_date())
         time = Time(earth.get_time())
         time_number = time.get_time_number()
@@ -403,27 +418,30 @@ class Location:
         time.set_time_number(time_number)
         return date, time
 
-    def arc_distance(self, target_location):
+    def compute_arc_distance(self, target_location):
         return location_arc_distance(self, target_location)
 
-    def distance(self, target_location):
+    def compute_distance(self, target_location):
         return location_distance(self, target_location)
 
-    def direction(self, target_location):
+    def compute_direction(self, target_location):
         return location_direction(self, target_location)
 
-    def direction_eight_party(self, target_location):
+    def compute_direction_eight_party(self, target_location):
         return location_eight_party(self, target_location)
 
-    def noon_sun_height(self, earth):
+    def compute_noon_sun_height(self, earth):
         latitude_difference = abs(self.__latitude.get_latitude_number() - earth.get_declination().get_latitude_number())
         return 324000 - latitude_difference
 
-    def sunrise_sunset_local_time(self, earth):
+    def compute_day_length(self, earth):
         declination = earth.get_declination()
         theta = math.atan(math.tan(declination.get_latitude_arc()) * math.tan(self.get_latitude().get_latitude_arc()))
         theta += 3.4212671791288e-7 / (math.cos(declination.get_latitude_arc()) ** 2 * math.cos(self.get_latitude().get_latitude_arc()) * math.cos(theta))
-        day_length = int((12 + 2 * theta / (2 * math.pi * 24)) * 3600)
+        return int((12 + 2 * theta / (2 * math.pi * 24)) * 3600)
+
+    def compute_sunrise_sunset_local_time(self, earth):
+        day_length = self.compute_day_length(earth)
         sunrise_time = int(43200 - day_length / 2)
         sunset_time = int(43200 + day_length / 2)
         return Time(sunrise_time), Time(sunset_time)
