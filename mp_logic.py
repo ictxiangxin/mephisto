@@ -220,9 +220,7 @@ def grammar_analysis(token_list):
                 pass
             elif operation_number == 1:
                 # argument -> name assign data
-                item = symbol_stack.pop()
-                name = symbol_stack.pop()
-                symbol_stack.append((name, item))
+                pass
             elif operation_number == 2:
                 # argument_list -> argument
                 argument = symbol_stack.pop()
@@ -278,7 +276,8 @@ def grammar_analysis(token_list):
                 pass
             elif operation_number == 14:
                 # argument -> data
-                pass
+                data = symbol_stack.pop()
+                symbol_stack.append(data)
             else:
                 raise Exception("Invalid reduce number: %d" % operation_number)
         elif operation_flag == "a":
@@ -287,22 +286,38 @@ def grammar_analysis(token_list):
             raise Exception("Invalid action: %s" % operation)
 
 
-class LogicLanguage:
+class MephistoLogic:
     def __init__(self, filename):
-        self.__logic_tree_list = parse(filename)
-        self.__compute = {"location": {}, "earth": {}}
-        for logic_tree in self.__logic_tree_list:
+        logic_tree_list = parse(filename)
+        self.__logic = {}
+        for logic_tree in logic_tree_list:
             condition = logic_tree["condition"]
             result = logic_tree["result"]
             function = logic_tree["function"]
-            simple_logic = True
-            object_class = result[0]
-            for each_condition in condition:
-                if object_class != each_condition[0]:
-                    simple_logic = False
-                    break
-            if simple_logic:
-                for each_condition in condition:
-                    if each_condition[1] not in self.__compute[object_class]:
-                        self.__compute[object_class][each_condition[1]] = []
-                    self.__compute[object_class][each_condition[1]].append((function, (cond[1] for cond in condition)))
+            if len(condition) == 1:
+                single_condition = condition[0]
+                if single_condition not in self.__logic:
+                    self.__logic[single_condition] = {}
+                self.__logic[single_condition][result] = ("single", function)
+            else:
+                for i in range(len(condition)):
+                    multi_condition = condition[i]
+                    if multi_condition not in self.__logic:
+                        self.__logic[multi_condition] = {}
+                    temp_others = []
+                    for j in range(len(condition)):
+                        if i == j:
+                            continue
+                        temp_others.append(condition[j])
+                    self.__logic[multi_condition][result] = ("multi", temp_others, function)
+
+    def decide_attribute(self, attribute):
+        if attribute not in self.__logic:
+            return None
+        result = {"single": [], "multi": []}
+        for d_attribute, d_function in self.__logic[attribute].items():
+            if d_function[0] == "single":
+                result["single"].append(d_attribute)
+            elif d_function[0] == "multi":
+                result["multi"].append((d_attribute, d_function[1]))
+        return result
