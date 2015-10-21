@@ -1,5 +1,5 @@
-from mp_date_time import *
 from mp_location import *
+import mp_logic
 
 
 class Earth:
@@ -20,18 +20,13 @@ class Earth:
         else:
             self.__time = None
 
-    def compute_date_time_related_attribute(self):
-        self.__spring_equinox = self._compute_spring_equinox()
-        self.__autumnal_equinox = self._compute_autumnal_equinox()
-        self.__declination = self._compute_declination()
-
     def set_date(self, date):
         if isinstance(date, str):
             self.__date = Date(date, self.__date_sep_string)
-            self.compute_date_time_related_attribute()
+            mp_logic.mp_logic.change_linkage(self, "date")
         elif isinstance(date, Date):
             self.__date = copy.deepcopy(date)
-            self.compute_date_time_related_attribute()
+            mp_logic.mp_logic.change_linkage(self, "date")
         else:
             raise Exception("Invalid date type: %s" % str(type(date)))
 
@@ -50,16 +45,32 @@ class Earth:
         return self.__time
 
     def set_date_sep_string(self, sep_string):
-        self.__date.set_sep_string(sep_string=sep_string)
+        self.__date_sep_string = sep_string
+        if self.__date is not None:
+            self.__date.set_sep_string(sep_string=sep_string)
 
     def set_time_sep_string(self, sep_string):
-        self.__time.set_sep_string(sep_string=sep_string)
+        self.__time_sep_string = sep_string
+        if self.__time is not None:
+            self.__time.set_sep_string(sep_string=sep_string)
+
+    def set_location_sep_string(self, sep_string):
+        self.__location_sep_string = sep_string
+
+    def set_direction_flag(self, direction_flag):
+        self.__direction_flag = direction_flag
 
     def get_date_sep_string(self):
-        return self.__date.get_sep_string()
+        return self.__date_sep_string
 
     def get_time_sep_string(self):
-        return self.__time.get_sep_string()
+        return self.__time_sep_string
+
+    def get_location_sep_string(self):
+        return self.__location_sep_string
+
+    def get_direction_flag(self):
+        return self.__direction_flag
 
     def forward_second(self, s):
         overflow = self.__time.forward_second(s)
@@ -85,55 +96,42 @@ class Earth:
 
     def forward_day(self, d):
         self.__date.forward_day(d)
-        self.compute_date_time_related_attribute()
+        mp_logic.mp_logic.change_linkage(self, "date")
 
     def forward_month(self, m):
         self.__date.forward_month(m)
-        self.compute_date_time_related_attribute()
+        mp_logic.mp_logic.change_linkage(self, "date")
 
     def forward_year(self, y):
         self.__date.forward_year(y)
-        self.compute_date_time_related_attribute()
+        mp_logic.mp_logic.change_linkage(self, "date")
 
     def backward_day(self, d):
         self.__date.backward_day(d)
-        self.compute_date_time_related_attribute()
+        mp_logic.mp_logic.change_linkage(self, "date")
 
     def backward_month(self, m):
         self.__date.backward_month(m)
-        self.compute_date_time_related_attribute()
+        mp_logic.mp_logic.change_linkage(self, "date")
 
     def backward_year(self, y):
         self.__date.backward_year(y)
-        self.compute_date_time_related_attribute()
+        mp_logic.mp_logic.change_linkage(self, "date")
 
-    def _compute_spring_equinox(self):
-        y, m, d = self.__date.get_date_tuple()
-        yy = y % 100
-        d = int(yy * 0.2422 + 20.646) - int(yy / 4)
-        m = 3
-        return Date(self.__date_sep_string.join([str(y), str(m), str(d)]))
+    def set_spring_equinox(self, date):
+        self.__spring_equinox = date
 
     def get_spring_equinox(self):
         return self.__spring_equinox
 
-    def _compute_autumnal_equinox(self):
-        date = self._compute_spring_equinox()
-        date.forward_day(186)
-        return date
+    def set_autumnal_equinox(self, date):
+        self.__autumnal_equinox = date
 
     def get_autumnal_equinox(self):
         return self.__autumnal_equinox
 
-    def _compute_declination(self):
-        y, m, d = self.__date.get_date_tuple()
-        ordinal_number = month_to_number(m) + d
-        b = 2 * math.pi * (ordinal_number - 1) / 365
-        delta = 0.006918
-        delta -= 0.399912 * math.cos(b) + 0.006758 * math.cos(2 * b) + 0.002697 * math.cos(3 * b)
-        delta += 0.070257 * math.sin(b) + 0.000907 * math.sin(2 * b) + 0.001480 * math.sin(3 * b)
-        return Latitude(int(648000 / math.pi * delta),
-                        sep_string=self.__location_sep_string, direction_flag=self.__direction_flag[-1])
+    def set_declination(self, latitude):
+        self.__declination = latitude
 
     def get_declination(self):
         return self.__declination

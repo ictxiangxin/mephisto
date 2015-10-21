@@ -377,11 +377,6 @@ class Location:
     def get_latitude(self):
         return self.__latitude
 
-    def _compute_time_zone(self):
-        if self.__longitude is None:
-            raise Exception("Can not compute time zone: longitude is None")
-        return int(self.__longitude.get_longitude_number() / 15)
-
     def set_time_zone(self, time_zone_second):
         if time_zone_second < -43200 or time_zone_second > 43200:
             raise Exception("Invalid time zone: %d" % time_zone_second)
