@@ -1,6 +1,3 @@
-__author__ = 'ict'
-
-
 def is_leap_year(y):
     leap_year = False
     if y % 100 == 0:

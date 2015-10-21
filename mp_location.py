@@ -1,8 +1,7 @@
-__author__ = 'ict'
-
 import copy
 import math
 from mp_date_time import Date, Time
+import mp_logic
 
 
 def longitude_string_to_number(longitude_string, sep_string=".", direction_flag=("E", "W")):
@@ -332,8 +331,8 @@ class Location:
         self.__sep_string = sep_string
         self.__longitude_direction_flag = direction_flag[0]
         self.__latitude_direction_flag = direction_flag[-1]
-        self.__time_zone = 0
-        self.__local_time = 0
+        self.__time_zone = None
+        self.__local_time = None
         if longitude is not None:
             self.set_longitude(longitude)
         else:
@@ -343,21 +342,26 @@ class Location:
         else:
             self.__latitude = None
 
-    def compute_longitude_related_attribute(self):
-        self.__time_zone = self._compute_time_zone()
-
-    def compute_time_zone_related_attribute(self):
-        self.__longitude.set_longitude_number(self.__time_zone * 15)
+    def get_by_name(self, name):
+        name_object = {
+            "longitude": self.__longitude,
+            "latitude": self.__latitude,
+            "time_zone": self.__time_zone,
+            "local_time": self.__local_time,
+        }
+        if name not in name_object:
+            return None
+        else:
+            return name_object[name]
 
     def set_longitude(self, longitude):
         if isinstance(longitude, str) or isinstance(longitude, int):
             self.__longitude = Longitude(longitude)
-            self.compute_longitude_related_attribute()
         elif isinstance(longitude, Longitude):
             self.__longitude = copy.deepcopy(longitude)
-            self.compute_longitude_related_attribute()
         else:
             raise Exception("Invalid longitude type: %s" % str(type(longitude)))
+        mp_logic.mp_logic.change_linkage(self, "longitude")
 
     def get_longitude(self):
         return self.__longitude
@@ -382,7 +386,7 @@ class Location:
         if time_zone_second < -43200 or time_zone_second > 43200:
             raise Exception("Invalid time zone: %d" % time_zone_second)
         self.__time_zone = time_zone_second
-        self.compute_time_zone_related_attribute()
+        mp_logic.mp_logic.change_linkage(self, "time_zone")
 
     def set_time_zone_standardized(self, time_zone_standardized):
         self.set_time_zone(time_zone_standardized * 15 * 3600)
@@ -399,7 +403,10 @@ class Location:
         return self.__local_time
 
     def compute_time_zone_standardized(self):
-        return int(self.__time_zone / 3600 / 15)
+        if self.__time_zone is not None:
+            return int(self.__time_zone / 3600 / 15)
+        else:
+            return None
 
     def compute_greenwich_mean_time(self, time):
         time.backward_second(self.get_time_zone())

@@ -1,5 +1,3 @@
-__author__ = 'ict'
-
 from mp_date_time import *
 from mp_location import *
 

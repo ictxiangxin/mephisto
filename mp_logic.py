@@ -1,6 +1,5 @@
-__author__ = 'ict'
-
 import re
+import mp_configure
 
 token_tuple = [
     ("name",      r"[_a-zA-Z][_a-zA-Z0-9]*"),
@@ -298,7 +297,7 @@ class MephistoLogic:
                 single_condition = condition[0]
                 if single_condition not in self.__logic:
                     self.__logic[single_condition] = {}
-                self.__logic[single_condition][result] = ("single", function)
+                self.__logic[single_condition][result] = ["single", function, 0]
             else:
                 for i in range(len(condition)):
                     multi_condition = condition[i]
@@ -309,7 +308,7 @@ class MephistoLogic:
                         if i == j:
                             continue
                         temp_others.append(condition[j])
-                    self.__logic[multi_condition][result] = ("multi", temp_others, function)
+                    self.__logic[multi_condition][result] = ["multi", temp_others, function, 0]
 
     def decide_attribute(self, attribute):
         if attribute not in self.__logic:
@@ -321,3 +320,69 @@ class MephistoLogic:
             elif d_function[0] == "multi":
                 result["multi"].append((d_attribute, d_function[1]))
         return result
+
+    def single_decide_attribute(self, attribute):
+        if attribute not in self.__logic:
+            return None
+        result = []
+        for d_attribute, d_function in self.__logic[attribute].items():
+            if d_function[0] == "single":
+                result.append(d_attribute)
+        return result
+
+    def multi_decide_attribute(self, attribute):
+        if attribute not in self.__logic:
+            return None
+        result = []
+        for d_attribute, d_function in self.__logic[attribute].items():
+            if d_function[0] == "multi":
+                result.append(d_attribute)
+        return result
+
+    def decide_entry(self, attribute_from, attribute_to):
+        if attribute_from not in self.__logic:
+            return None
+        if attribute_to not in self.__logic[attribute_from]:
+            return None
+        return self.__logic[attribute_from][attribute_to]
+
+    def change_linkage(self, mp_object, attribute, timestamp=None):
+        import mp_logic_function
+        import time
+        if timestamp is None:
+            timestamp = time.time()
+        decide = self.decide_attribute(attribute)
+        single = decide["single"]
+        multi = decide["multi"]
+        for single_attribute in single:
+            entry = self.decide_entry(attribute, single_attribute)
+            function_timestamp = entry[2]
+            function = entry[1]
+            function_name = function[0]
+            argument_list = function[1]
+            if len(argument_list) == 1 and argument_list[0] == attribute[0]:
+                if function_timestamp != timestamp:
+                    mp_logic_function.function_register[function_name](mp_object)
+                    entry[2] = timestamp
+                    self.change_linkage(mp_object, single_attribute, timestamp)
+        for multi_attribute in multi:
+            entry = self.decide_entry(attribute, multi_attribute)
+            function_timestamp = entry[3]
+            function = entry[2]
+            function_name = function[0]
+            argument_list = function[1]
+            current_attribute = multi_attribute[0]
+            relate_attribute = multi_attribute[1]
+            all_ready = True
+            for relate in relate_attribute:
+                if mp_object.get_by_name(relate[1]) is None:
+                    all_ready = False
+                    break
+            if all_ready and len(argument_list) == 1 and argument_list[0] == current_attribute[0]:
+                if function_timestamp != timestamp:
+                    mp_logic_function.function_register[function_name](mp_object)
+                    entry[3] = timestamp
+                    self.change_linkage(mp_object, current_attribute, timestamp)
+
+
+mp_logic = MephistoLogic(mp_configure.logic_language_file)
