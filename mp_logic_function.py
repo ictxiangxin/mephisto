@@ -5,15 +5,15 @@ import math
 
 
 def compute_time_zone_by_longitude(location):
-    location.set_time_zone(int(location.get_longitude().get_longitude_number() / 15))
+    location.only_set_time_zone(int(location.get_longitude().get_longitude_number() / 15))
 
 
 def compute_longitude_by_time_zone(location):
-    location.set_longitude(location.get_time_zone() * 15)
+    location.only_set_longitude(location.get_time_zone() * 15)
 
 
 def compute_declination_by_date(earth):
-    y, m, d = earth.__date.get_date_tuple()
+    y, m, d = earth.get_date().get_date_tuple()
     ordinal_number = month_to_number(m) + d
     b = 2 * math.pi * (ordinal_number - 1) / 365
     delta = 0.006918
@@ -24,11 +24,11 @@ def compute_declination_by_date(earth):
 
 
 def compute_equinox_by_date(earth):
-    y, m, d = earth.__date.get_date_tuple()
+    y, m, d = earth.get_date().get_date_tuple()
     yy = y % 100
     d = int(yy * 0.2422 + 20.646) - int(yy / 4)
     m = 3
-    sprint_equinox = Date(earth.__date_sep_string.join([str(y), str(m), str(d)]))
+    sprint_equinox = Date(earth.get_date_sep_string().join([str(y), str(m), str(d)]))
     autumnal_equinox = copy.deepcopy(sprint_equinox)
     autumnal_equinox.forward_day(186)
     earth.set_spring_equinox(sprint_equinox)

@@ -20,26 +20,46 @@ class Earth:
         else:
             self.__time = None
 
-    def set_date(self, date):
+    def __str__(self):
+        return " ".join([str(self.get_date()), str(self.get_time())])
+
+    def get_by_name(self, name):
+        name_object = {
+            "date": self.__date,
+            "spring_equinox": self.__spring_equinox,
+            "autumnal_equinox": self.__autumnal_equinox,
+            "declination": self.__declination,
+        }
+        if name not in name_object:
+            return None
+        else:
+            return name_object[name]
+
+    def only_set_date(self, date):
         if isinstance(date, str):
             self.__date = Date(date, self.__date_sep_string)
-            mp_logic.mp_logic.change_linkage(self, "date")
         elif isinstance(date, Date):
             self.__date = copy.deepcopy(date)
-            mp_logic.mp_logic.change_linkage(self, "date")
         else:
             raise Exception("Invalid date type: %s" % str(type(date)))
+
+    def set_date(self, date):
+        self.only_set_date(date)
+        mp_logic.mp_logic.change_linkage(self, ("earth", "date"))
 
     def get_date(self):
         return self.__date
 
-    def set_time(self, time):
+    def only_set_time(self, time):
         if isinstance(time, str):
             self.__time = Time(time, self.__time_sep_string)
         elif isinstance(time, Time):
             self.__time = copy.deepcopy(time)
         else:
             raise Exception("Invalid time type: %s" % str(type(time)))
+
+    def set_time(self, time):
+        self.only_set_time(time)
 
     def get_time(self):
         return self.__time

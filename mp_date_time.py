@@ -138,6 +138,9 @@ class Date:
         else:
             raise Exception("Invalid date type: %s" % str(type(date)))
 
+    def __str__(self):
+        return self.get_date_string()
+
     def get_date_tuple(self):
         return (int(elem) for elem in self.__date_string.split(self.__sep_string))
 
@@ -219,6 +222,9 @@ class Time:
             self.set_time_number(time.get_time_number())
         else:
             raise Exception("Invalid time type: %s" % str(type(time)))
+
+    def __str__(self):
+        return self.get_time_string()
 
     def get_time_tuple(self):
         return (int(elem) for elem in self.__time_string.split(self.__sep_string))

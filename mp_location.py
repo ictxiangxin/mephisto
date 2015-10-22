@@ -167,6 +167,9 @@ class Longitude:
         else:
             raise Exception("Invalid longitude type: %s" % str(type(longitude)))
 
+    def __str__(self):
+        return self.get_longitude_string()
+
     def get_longitude_tuple(self):
         return (int(elem) for elem in self.__longitude_string.split(self.__sep_string))
 
@@ -251,6 +254,9 @@ class Latitude:
             self.set_latitude_number(latitude)
         else:
             raise Exception("Invalid latitude type: %s" % str(type(latitude)))
+
+    def __str__(self):
+        return self.get_latitude_string()
 
     def get_latitude_tuple(self):
         return (int(elem) for elem in self.__latitude_string.split(self.__sep_string))
@@ -342,6 +348,9 @@ class Location:
         else:
             self.__latitude = None
 
+    def __str__(self):
+        return " ".join([str(self.get_longitude()), str(self.get_latitude())])
+
     def get_by_name(self, name):
         name_object = {
             "longitude": self.__longitude,
@@ -354,19 +363,22 @@ class Location:
         else:
             return name_object[name]
 
-    def set_longitude(self, longitude):
+    def _set_longitude(self, longitude):
         if isinstance(longitude, str) or isinstance(longitude, int):
             self.__longitude = Longitude(longitude)
         elif isinstance(longitude, Longitude):
             self.__longitude = copy.deepcopy(longitude)
         else:
             raise Exception("Invalid longitude type: %s" % str(type(longitude)))
-        mp_logic.mp_logic.change_linkage(self, "longitude")
+
+    def set_longitude(self, longitude):
+        self._set_longitude(longitude)
+        mp_logic.mp_logic.change_linkage(self, ("location", "longitude"))
 
     def get_longitude(self):
         return self.__longitude
 
-    def set_latitude(self, latitude):
+    def only_set_latitude(self, latitude):
         if isinstance(latitude, str) or isinstance(latitude, int):
             self.__latitude = Latitude(latitude)
         elif isinstance(latitude, Latitude):
@@ -374,14 +386,20 @@ class Location:
         else:
             raise Exception("Invalid longitude type: %s" % str(type(latitude)))
 
+    def set_latitude(self, latitude):
+        self.only_set_latitude(latitude)
+
     def get_latitude(self):
         return self.__latitude
 
-    def set_time_zone(self, time_zone_second):
+    def only_set_time_zone(self, time_zone_second):
         if time_zone_second < -43200 or time_zone_second > 43200:
             raise Exception("Invalid time zone: %d" % time_zone_second)
         self.__time_zone = time_zone_second
-        mp_logic.mp_logic.change_linkage(self, "time_zone")
+
+    def set_time_zone(self, time_zone_second):
+        self.only_set_time_zone(time_zone_second)
+        mp_logic.mp_logic.change_linkage(self, ("location", "time_zone"))
 
     def set_time_zone_standardized(self, time_zone_standardized):
         self.set_time_zone(time_zone_standardized * 15 * 3600)
@@ -389,10 +407,13 @@ class Location:
     def get_time_zone(self):
         return self.__time_zone
 
-    def set_local_time(self, time):
+    def only_set_local_time(self, time):
         if not isinstance(time, "Time"):
             raise Exception("Must input Time instance: %s" % str(type(time)))
         self.__local_time = copy.copy(time)
+
+    def set_local_time(self, time):
+        self.only_set_local_time(time)
 
     def get_local_time(self):
         return self.__local_time

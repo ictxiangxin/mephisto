@@ -297,7 +297,7 @@ class MephistoLogic:
                 single_condition = condition[0]
                 if single_condition not in self.__logic:
                     self.__logic[single_condition] = {}
-                self.__logic[single_condition][result] = ["single", function, 0]
+                self.__logic[single_condition][result] = ("single", function)
             else:
                 for i in range(len(condition)):
                     multi_condition = condition[i]
@@ -308,7 +308,7 @@ class MephistoLogic:
                         if i == j:
                             continue
                         temp_others.append(condition[j])
-                    self.__logic[multi_condition][result] = ["multi", temp_others, function, 0]
+                    self.__logic[multi_condition][result] = ("multi", temp_others, function)
 
     def decide_attribute(self, attribute):
         if attribute not in self.__logic:
@@ -339,50 +339,47 @@ class MephistoLogic:
                 result.append(d_attribute)
         return result
 
-    def decide_entry(self, attribute_from, attribute_to):
+    def decide_function(self, attribute_from, attribute_to):
         if attribute_from not in self.__logic:
             return None
         if attribute_to not in self.__logic[attribute_from]:
             return None
-        return self.__logic[attribute_from][attribute_to]
+        return self.__logic[attribute_from][attribute_to][-1]
 
-    def change_linkage(self, mp_object, attribute, timestamp=None):
+    def change_linkage(self, mp_object, attribute, access_set=None):
         import mp_logic_function
-        import time
-        if timestamp is None:
-            timestamp = time.time()
+        if access_set is None:
+            access_set = {attribute[1]}
         decide = self.decide_attribute(attribute)
+        if decide is None:
+            return
         single = decide["single"]
         multi = decide["multi"]
         for single_attribute in single:
-            entry = self.decide_entry(attribute, single_attribute)
-            function_timestamp = entry[2]
-            function = entry[1]
+            function = self.decide_function(attribute, single_attribute)
             function_name = function[0]
             argument_list = function[1]
             if len(argument_list) == 1 and argument_list[0] == attribute[0]:
-                if function_timestamp != timestamp:
+                if single_attribute[1] not in access_set:
                     mp_logic_function.function_register[function_name](mp_object)
-                    entry[2] = timestamp
-                    self.change_linkage(mp_object, single_attribute, timestamp)
+                    access_set.add(single_attribute[1])
+                    self.change_linkage(mp_object, single_attribute, access_set)
         for multi_attribute in multi:
-            entry = self.decide_entry(attribute, multi_attribute)
-            function_timestamp = entry[3]
-            function = entry[2]
-            function_name = function[0]
-            argument_list = function[1]
             current_attribute = multi_attribute[0]
             relate_attribute = multi_attribute[1]
+            function = self.decide_function(attribute, current_attribute)
+            function_name = function[0]
+            argument_list = function[1]
             all_ready = True
             for relate in relate_attribute:
                 if mp_object.get_by_name(relate[1]) is None:
                     all_ready = False
                     break
             if all_ready and len(argument_list) == 1 and argument_list[0] == current_attribute[0]:
-                if function_timestamp != timestamp:
+                if current_attribute[1] not in access_set:
                     mp_logic_function.function_register[function_name](mp_object)
-                    entry[3] = timestamp
-                    self.change_linkage(mp_object, current_attribute, timestamp)
+                    access_set.add(current_attribute[1])
+                    self.change_linkage(mp_object, current_attribute, access_set)
 
 
 mp_logic = MephistoLogic(mp_configure.logic_language_file)
