@@ -1,9 +1,10 @@
 from mp_location import *
 import mp_logic
+import mp_configure
 
 
 class Earth:
-    def __init__(self, date=None, time=None, date_sep_string="-", time_sep_string=":", location_sep_string=".", direction_flag=(("E", "W"), ("N", "S"))):
+    def __init__(self, date=None, time=None, date_sep_string=mp_configure.date_sep_string, time_sep_string=mp_configure.time_sep_string, location_sep_string=mp_configure.location_sep_string, direction_flag=mp_configure.location_direction_flag):
         self.__date_sep_string = date_sep_string
         self.__time_sep_string = time_sep_string
         self.__location_sep_string = location_sep_string

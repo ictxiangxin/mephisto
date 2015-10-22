@@ -2,9 +2,10 @@ import copy
 import math
 from mp_date_time import Date, Time
 import mp_logic
+import mp_configure
 
 
-def longitude_string_to_number(longitude_string, sep_string=".", direction_flag=("E", "W")):
+def longitude_string_to_number(longitude_string, sep_string=mp_configure.location_sep_string, direction_flag=mp_configure.location_direction_flag[1]):
     direction = longitude_string[-1]
     longitude_string = longitude_string[:-1]
     d, m, s = [int(elem) for elem in longitude_string.split(sep_string)]
@@ -18,7 +19,7 @@ def longitude_string_to_number(longitude_string, sep_string=".", direction_flag=
     raise Exception("Invalid direction flag: %s" % direction)
 
 
-def number_to_longitude_string(number, sep_string=".", direction_flag=("E", "W")):
+def number_to_longitude_string(number, sep_string=mp_configure.location_sep_string, direction_flag=mp_configure.location_direction_flag[0]):
     if number > 0:
         direction = direction_flag[0]
     else:
@@ -33,7 +34,7 @@ def number_to_longitude_string(number, sep_string=".", direction_flag=("E", "W")
     return sep_string.join([str(d), str(m), str(s)]) + direction
 
 
-def latitude_string_to_number(latitude_string, sep_string=".", direction_flag=("N", "S")):
+def latitude_string_to_number(latitude_string, sep_string=mp_configure.location_sep_string, direction_flag=mp_configure.location_direction_flag[1]):
     direction = latitude_string[-1]
     latitude_string = latitude_string[:-1]
     d, m, s = [int(elem) for elem in latitude_string.split(sep_string)]
@@ -47,7 +48,7 @@ def latitude_string_to_number(latitude_string, sep_string=".", direction_flag=("
     raise Exception("Invalid direction flag: %s" % direction)
 
 
-def number_to_latitude_string(number, sep_string=".", direction_flag=("N", "S")):
+def number_to_latitude_string(number, sep_string=mp_configure.location_sep_string, direction_flag=mp_configure.location_direction_flag[1]):
     if number > 0:
         direction = direction_flag[0]
     else:
@@ -66,7 +67,7 @@ def longitude_number_distance(longitude_number_a, longitude_number_b):
     return abs(longitude_number_a - longitude_number_b) % 1296000
 
 
-def longitude_string_distance(longitude_string_a, longitude_string_b, sep_string=".", direction_flag=("E", "W")):
+def longitude_string_distance(longitude_string_a, longitude_string_b, sep_string=mp_configure.location_sep_string, direction_flag=mp_configure.location_direction_flag[0]):
     longitude_number_a = longitude_string_to_number(longitude_string_a, sep_string=sep_string,
                                                     direction_flag=direction_flag)
     longitude_number_b = longitude_string_to_number(longitude_string_b, sep_string=sep_string,
@@ -78,7 +79,7 @@ def latitude_number_distance(latitude_number_a, latitude_number_b):
     return abs(latitude_number_a - latitude_number_b)
 
 
-def latitude_string_distance(latitude_string_a, latitude_string_b, sep_string=".", direction_flag=("N", "S")):
+def latitude_string_distance(latitude_string_a, latitude_string_b, sep_string=mp_configure.location_sep_string, direction_flag=mp_configure.location_direction_flag[1]):
     latitude_number_a = latitude_string_to_number(latitude_string_a, sep_string=sep_string,
                                                   direction_flag=direction_flag)
     latitude_number_b = latitude_string_to_number(latitude_string_b, sep_string=sep_string,
@@ -109,7 +110,7 @@ def location_direction(source_location, target_location):
     return longitude_difference, latitude_difference
 
 
-def location_eight_party_by_direction_tuple(direction_tuple, direction_flag=(("E", "W"), ("N", "S"))):
+def location_eight_party_by_direction_tuple(direction_tuple, direction_flag=mp_configure.location_direction_flag):
     longitude_difference = direction_tuple[0]
     latitude_difference = direction_tuple[1]
     if longitude_difference == 0 and latitude_difference == 0:
@@ -149,13 +150,13 @@ def location_eight_party_by_direction_tuple(direction_tuple, direction_flag=(("E
                 return direction_flag[-1][-1]
 
 
-def location_eight_party(source_location, target_location, direction_flag=(("E", "W"), ("N", "S"))):
+def location_eight_party(source_location, target_location, direction_flag=mp_configure.location_direction_flag):
     direction_tuple = location_direction(source_location, target_location)
     return location_eight_party_by_direction_tuple(direction_tuple, direction_flag)
 
 
 class Longitude:
-    def __init__(self, longitude, sep_string=".", direction_flag=("E", "W")):
+    def __init__(self, longitude, sep_string=mp_configure.location_sep_string, direction_flag=mp_configure.location_direction_flag[0]):
         self.__longitude_number = 0
         self.__longitude_string = sep_string.join(["0"] * 3) + direction_flag[0]
         self.__sep_string = sep_string
@@ -333,7 +334,7 @@ class Latitude:
 
 
 class Location:
-    def __init__(self, longitude=None, latitude=None, sep_string=".", direction_flag=(("E", "W"), ("N", "S"))):
+    def __init__(self, longitude=None, latitude=None, sep_string=mp_configure.location_sep_string, direction_flag=mp_configure.location_direction_flag):
         self.__sep_string = sep_string
         self.__longitude_direction_flag = direction_flag[0]
         self.__latitude_direction_flag = direction_flag[-1]

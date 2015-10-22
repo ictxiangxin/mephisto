@@ -1,3 +1,6 @@
+import mp_configure
+
+
 def is_leap_year(y):
     leap_year = False
     if y % 100 == 0:
@@ -56,7 +59,7 @@ def month_to_number(m, leap_year=False):
     return number
 
 
-def date_string_to_number(date_string, sep_string="-"):
+def date_string_to_number(date_string, sep_string=mp_configure.date_sep_string):
     y, m, d = [int(elem) for elem in date_string.split(sep_string)]
     if y < 1 or m < 1 or m > 12:
         raise Exception("Invalid date: %s" % date_string)
@@ -68,7 +71,7 @@ def date_string_to_number(date_string, sep_string="-"):
     return year_number + month_number + d
 
 
-def number_to_date_string(number, sep_string="-"):
+def number_to_date_string(number, sep_string=mp_configure.date_sep_string):
     y, m, d = 1, 1, 0
     leap_year = False
     while (not leap_year and number > 365) or (leap_year and number > 366):
@@ -89,14 +92,14 @@ def number_to_date_string(number, sep_string="-"):
     return sep_string.join([str(y), str(m), str(d)])
 
 
-def time_string_to_number(time_string, sep_string=":"):
+def time_string_to_number(time_string, sep_string=mp_configure.time_sep_string):
     h, m, s = [int(elem) for elem in time_string.split(sep_string)]
     if h > 24 or m > 60 or s > 60:
         raise Exception("Invalid time: %s" % time_string)
     return h * 3600 + m * 60 + s
 
 
-def number_to_time_string(number, sep_string=":"):
+def number_to_time_string(number, sep_string=mp_configure.time_sep_string):
     if number > 86400:
         raise Exception("Invalid time number: %d" % number)
     h = int(number / 3600)
@@ -106,12 +109,12 @@ def number_to_time_string(number, sep_string=":"):
     return sep_string.join([str(h), str(m), str(s)])
 
 
-def date_string_distance(date_string_a, date_string_b, sep_string="-"):
+def date_string_distance(date_string_a, date_string_b, sep_string=mp_configure.date_sep_string):
     return abs(date_string_to_number(date_string_a, sep_string=sep_string) -
                date_string_to_number(date_string_b, sep_string=sep_string))
 
 
-def time_string_distance(time_string_a, time_string_b, sep_string=":"):
+def time_string_distance(time_string_a, time_string_b, sep_string=mp_configure.time_sep_string):
     return abs(time_string_to_number(time_string_a, sep_string=sep_string) -
                time_string_to_number(time_string_b, sep_string=sep_string))
 
@@ -125,7 +128,7 @@ def time_distance(time_a, time_b):
 
 
 class Date:
-    def __init__(self, date, sep_string="-"):
+    def __init__(self, date, sep_string=mp_configure.date_sep_string):
         self.__date_number = 0
         self.__date_string = sep_string.join(["1"] * 3)
         self.__sep_string = sep_string
@@ -210,7 +213,7 @@ class Date:
 
 
 class Time:
-    def __init__(self, time, sep_string=":"):
+    def __init__(self, time, sep_string=mp_configure.time_sep_string):
         self.__time_number = 0
         self.__time_string = sep_string.join(["0"] * 3)
         self.__sep_string = sep_string
