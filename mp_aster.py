@@ -12,6 +12,7 @@ class Earth:
         self.__spring_equinox = None
         self.__autumnal_equinox = None
         self.__declination = None
+        self.__bind_location_list = []
         if date is not None:
             self.set_date(date)
         else:
@@ -61,6 +62,7 @@ class Earth:
 
     def set_time(self, time):
         self.only_set_time(time)
+        mp_logic.mp_logic.change_linkage(self, ("earth", "time"))
 
     def get_time(self):
         return self.__time
@@ -97,47 +99,53 @@ class Earth:
         overflow = self.__time.forward_second(s)
         if overflow > 0:
             self.forward_day(overflow)
+        mp_logic.mp_logic.change_linkage(self, ("earth", "time"))
 
     def forward_minute(self, m):
         self.__time.forward_second(m * 60)
+        mp_logic.mp_logic.change_linkage(self, ("earth", "time"))
 
     def forward_hour(self, h):
         self.__time.forward_second(h * 3600)
+        mp_logic.mp_logic.change_linkage(self, ("earth", "time"))
 
     def backward_second(self, s):
         overflow = self.__time.backward_second(s)
         if overflow < 0:
             self.backward_day(-overflow)
+        mp_logic.mp_logic.change_linkage(self, ("earth", "time"))
 
     def backward_minute(self, m):
         self.__time.backward_second(m * 60)
+        mp_logic.mp_logic.change_linkage(self, ("earth", "time"))
 
     def backward_hour(self, h):
         self.__time.backward_second(h * 3600)
+        mp_logic.mp_logic.change_linkage(self, ("earth", "time"))
 
     def forward_day(self, d):
         self.__date.forward_day(d)
-        mp_logic.mp_logic.change_linkage(self, "date")
+        mp_logic.mp_logic.change_linkage(self, ("earth", "date"))
 
     def forward_month(self, m):
         self.__date.forward_month(m)
-        mp_logic.mp_logic.change_linkage(self, "date")
+        mp_logic.mp_logic.change_linkage(self, ("earth", "date"))
 
     def forward_year(self, y):
         self.__date.forward_year(y)
-        mp_logic.mp_logic.change_linkage(self, "date")
+        mp_logic.mp_logic.change_linkage(self, ("earth", "date"))
 
     def backward_day(self, d):
         self.__date.backward_day(d)
-        mp_logic.mp_logic.change_linkage(self, "date")
+        mp_logic.mp_logic.change_linkage(self, ("earth", "date"))
 
     def backward_month(self, m):
         self.__date.backward_month(m)
-        mp_logic.mp_logic.change_linkage(self, "date")
+        mp_logic.mp_logic.change_linkage(self, ("earth", "date"))
 
     def backward_year(self, y):
         self.__date.backward_year(y)
-        mp_logic.mp_logic.change_linkage(self, "date")
+        mp_logic.mp_logic.change_linkage(self, ("earth", "date"))
 
     def set_spring_equinox(self, date):
         self.__spring_equinox = date
@@ -156,3 +164,11 @@ class Earth:
 
     def get_declination(self):
         return self.__declination
+
+    def add_bind_location(self, location, from_location=False):
+        self.__bind_location_list.append(location)
+        if not from_location:
+            location.set_bind_earth(self, from_earth=True)
+
+    def get_bind_location_list(self):
+        return self.__bind_location_list

@@ -69,10 +69,8 @@ def longitude_number_distance(longitude_number_a, longitude_number_b):
 
 
 def longitude_string_distance(longitude_string_a, longitude_string_b, sep_string=mp_configure.location_sep_string, direction_flag=mp_configure.location_direction_flag[0]):
-    longitude_number_a = longitude_string_to_number(longitude_string_a, sep_string=sep_string,
-                                                    direction_flag=direction_flag)
-    longitude_number_b = longitude_string_to_number(longitude_string_b, sep_string=sep_string,
-                                                    direction_flag=direction_flag)
+    longitude_number_a = longitude_string_to_number(longitude_string_a, sep_string=sep_string, direction_flag=direction_flag)
+    longitude_number_b = longitude_string_to_number(longitude_string_b, sep_string=sep_string, direction_flag=direction_flag)
     return longitude_number_distance(longitude_number_a, longitude_number_b)
 
 
@@ -81,18 +79,14 @@ def latitude_number_distance(latitude_number_a, latitude_number_b):
 
 
 def latitude_string_distance(latitude_string_a, latitude_string_b, sep_string=mp_configure.location_sep_string, direction_flag=mp_configure.location_direction_flag[1]):
-    latitude_number_a = latitude_string_to_number(latitude_string_a, sep_string=sep_string,
-                                                  direction_flag=direction_flag)
-    latitude_number_b = latitude_string_to_number(latitude_string_b, sep_string=sep_string,
-                                                  direction_flag=direction_flag)
+    latitude_number_a = latitude_string_to_number(latitude_string_a, sep_string=sep_string, direction_flag=direction_flag)
+    latitude_number_b = latitude_string_to_number(latitude_string_b, sep_string=sep_string, direction_flag=direction_flag)
     return latitude_number_distance(latitude_number_a, latitude_number_b)
 
 
 def location_arc_distance(location_a, location_b):
-    longitude_distance = longitude_number_distance(location_a.get_longitude().get_longitude_number(),
-                                                   location_b.get_longitude().get_longitude_number())
-    latitude_distance = latitude_number_distance(location_a.get_latitude().get_latitude_number(),
-                                                 location_b.get_latitude().get_latitude_number())
+    longitude_distance = longitude_number_distance(location_a.get_longitude().get_longitude_number(), location_b.get_longitude().get_longitude_number())
+    latitude_distance = latitude_number_distance(location_a.get_latitude().get_latitude_number(), location_b.get_latitude().get_latitude_number())
     return (longitude_distance ** 2 + latitude_distance ** 2) ** 0.5 / 3600 / 360 * 2 * math.pi
 
 
@@ -179,9 +173,7 @@ class Longitude:
         return self.__longitude_number / 1296000 * 2 * math.pi
 
     def set_longitude_string(self, longitude_string):
-        self.__longitude_number = longitude_string_to_number(longitude_string,
-                                                             sep_string=self.__sep_string,
-                                                             direction_flag=self.__direction_flag)
+        self.__longitude_number = longitude_string_to_number(longitude_string, sep_string=self.__sep_string, direction_flag=self.__direction_flag)
         self.__longitude_string = longitude_string
 
     def get_longitude_string(self):
@@ -190,9 +182,7 @@ class Longitude:
     def set_longitude_number(self, longitude_number):
         if abs(longitude_number) > 648000:
             raise Exception("Invalid longitude number: %d" % longitude_number)
-        self.__longitude_string = number_to_longitude_string(longitude_number,
-                                                             sep_string=self.__sep_string,
-                                                             direction_flag=self.__direction_flag)
+        self.__longitude_string = number_to_longitude_string(longitude_number, sep_string=self.__sep_string, direction_flag=self.__direction_flag)
         self.__longitude_number = longitude_number
 
     def get_longitude_number(self):
@@ -200,9 +190,7 @@ class Longitude:
 
     def set_sep_string(self, sep_string):
         self.__sep_string = sep_string
-        self.__longitude_string = number_to_longitude_string(self.__longitude_number,
-                                                             sep_string=self.__sep_string,
-                                                             direction_flag=self.__direction_flag)
+        self.__longitude_string = number_to_longitude_string(self.__longitude_number, sep_string=self.__sep_string, direction_flag=self.__direction_flag)
 
     def get_sep_string(self):
         return self.__sep_string
@@ -211,9 +199,7 @@ class Longitude:
         if len(direction_flag) < 2:
             raise Exception("Invalid direction flag: %s" % str(direction_flag))
         self.__direction_flag = direction_flag
-        self.__longitude_string = number_to_longitude_string(self.__longitude_number,
-                                                             sep_string=self.__sep_string,
-                                                             direction_flag=self.__direction_flag)
+        self.__longitude_string = number_to_longitude_string(self.__longitude_number, sep_string=self.__sep_string, direction_flag=self.__direction_flag)
 
     def get_direction_flag(self):
         return self.__direction_flag
@@ -224,9 +210,7 @@ class Longitude:
         self.__longitude_number += 648000
         self.__longitude_number %= 1296000
         self.__longitude_number -= 648000
-        self.__longitude_string = number_to_longitude_string(self.__longitude_number,
-                                                             sep_string=self.__sep_string,
-                                                             direction_flag=self.__direction_flag)
+        self.__longitude_string = number_to_longitude_string(self.__longitude_number, sep_string=self.__sep_string, direction_flag=self.__direction_flag)
 
     def west_move_second(self, second):
         self.east_move_second(-second)
@@ -267,9 +251,7 @@ class Latitude:
         return self.__latitude_number / 1296000 * 2 * math.pi
 
     def set_latitude_string(self, latitude_string):
-        self.__latitude_number = latitude_string_to_number(latitude_string,
-                                                           sep_string=self.__sep_string,
-                                                           direction_flag=self.__direction_flag)
+        self.__latitude_number = latitude_string_to_number(latitude_string, sep_string=self.__sep_string, direction_flag=self.__direction_flag)
         self.__latitude_string = latitude_string
 
     def get_latitude_string(self):
@@ -278,9 +260,7 @@ class Latitude:
     def set_latitude_number(self, latitude_number):
         if abs(latitude_number) > 324000:
             raise Exception("Invalid latitude number: %d" % latitude_number)
-        self.__latitude_string = number_to_latitude_string(latitude_number,
-                                                           sep_string=self.__sep_string,
-                                                           direction_flag=self.__direction_flag)
+        self.__latitude_string = number_to_latitude_string(latitude_number, sep_string=self.__sep_string, direction_flag=self.__direction_flag)
         self.__latitude_number = latitude_number
 
     def get_latitude_number(self):
@@ -288,9 +268,7 @@ class Latitude:
 
     def set_sep_string(self, sep_string):
         self.__sep_string = sep_string
-        self.__latitude_string = number_to_latitude_string(self.__latitude_number,
-                                                           sep_string=self.__sep_string,
-                                                           direction_flag=self.__direction_flag)
+        self.__latitude_string = number_to_latitude_string(self.__latitude_number, sep_string=self.__sep_string, direction_flag=self.__direction_flag)
 
     def get_sep_string(self):
         return self.__sep_string
@@ -299,9 +277,7 @@ class Latitude:
         if len(direction_flag) < 2:
             raise Exception("Invalid direction flag: %s" % str(direction_flag))
         self.__direction_flag = direction_flag
-        self.__latitude_string = number_to_latitude_string(self.__latitude_number,
-                                                           sep_string=self.__sep_string,
-                                                           direction_flag=self.__direction_flag)
+        self.__latitude_string = number_to_latitude_string(self.__latitude_number, sep_string=self.__sep_string, direction_flag=self.__direction_flag)
 
     def get_direction_flag(self):
         return self.__direction_flag
@@ -314,9 +290,7 @@ class Latitude:
         if self.__latitude_number > 648000:
             self.__latitude_number = 1296000 - self.__latitude_number
         self.__latitude_number -= 324000
-        self.__latitude_string = number_to_latitude_string(self.__latitude_number,
-                                                           sep_string=self.__sep_string,
-                                                           direction_flag=self.__direction_flag)
+        self.__latitude_string = number_to_latitude_string(self.__latitude_number, sep_string=self.__sep_string, direction_flag=self.__direction_flag)
 
     def south_move_second(self, second):
         self.north_move_second(second)
@@ -343,6 +317,10 @@ class Location:
         self.__local_date = None
         self.__local_time = None
         self.__bind_earth = None
+        self.__noon_sun_height = None
+        self.__day_length = None
+        self.__sunrise_time = None
+        self.__sunset_time = None
         if longitude is not None:
             self.set_longitude(longitude)
         else:
@@ -362,6 +340,11 @@ class Location:
             "time_zone": self.__time_zone,
             "local_date": self.__local_date,
             "local_time": self.__local_time,
+            "bind_earth": self.__bind_earth,
+            "noon_sun_height": self.__noon_sun_height,
+            "day_length": self.__day_length,
+            "sunrise_time": self.__sunrise_time,
+            "sunset_time": self.__sunset_time,
         }
         if name not in name_object:
             return None
@@ -436,13 +419,15 @@ class Location:
     def get_local_time(self):
         return self.__local_time
 
-    def only_set_bind_earth(self, earth):
+    def only_set_bind_earth(self, earth, from_earth=False):
         if not isinstance(earth, Earth):
             raise Exception("Must input Earth instance: %s" % str(type(earth)))
         self.__bind_earth = earth
+        if not from_earth:
+            earth.add_bind_location(self, from_location=True)
 
-    def set_bind_earth(self, earth):
-        self.only_set_bind_earth(earth)
+    def set_bind_earth(self, earth, from_earth=False):
+        self.only_set_bind_earth(earth, from_earth)
         mp_logic.mp_logic.change_linkage(self, ("location", "bind_earth"))
 
     def get_bind_earth(self):
@@ -476,14 +461,48 @@ class Location:
         latitude_difference = abs(self.__latitude.get_latitude_number() - earth.get_declination().get_latitude_number())
         return 324000 - latitude_difference
 
+    def only_set_noon_sun_height(self, latitude):
+        self.__noon_sun_height = Latitude(latitude)
+
+    def set_noon_sun_height(self, latitude, decide_attribute=None):
+        self.only_set_day_length(latitude)
+        mp_logic.mp_logic.change_linkage(self, ("location", "noon_sun_height"))
+
+    def get_noon_sun_height(self):
+        return self.__noon_sun_height
+
     def compute_day_length(self, earth):
         declination = earth.get_declination()
         theta = math.atan(math.tan(declination.get_latitude_arc()) * math.tan(self.get_latitude().get_latitude_arc()))
         theta += 3.4212671791288e-7 / (math.cos(declination.get_latitude_arc()) ** 2 * math.cos(self.get_latitude().get_latitude_arc()) * math.cos(theta))
         return int((12 + 2 * theta / (2 * math.pi * 24)) * 3600)
 
-    def compute_sunrise_sunset_local_time(self, earth):
-        day_length = self.compute_day_length(earth)
-        sunrise_time = int(43200 - day_length / 2)
-        sunset_time = int(43200 + day_length / 2)
-        return Time(sunrise_time), Time(sunset_time)
+    def only_set_day_length(self, time):
+        self.__day_length = Time(time)
+
+    def set_day_length(self, time):
+        self.only_set_day_length(time)
+        mp_logic.mp_logic.change_linkage(self, ("location", "day_length"))
+
+    def get_day_length(self):
+        return self.__day_length
+
+    def only_set_sunrise_time(self, time):
+        self.__sunrise_time = Time(time)
+
+    def set_sunrise_time(self, time):
+        self.only_set_sunrise_time(time)
+        mp_logic.mp_logic.change_linkage(self, ("location", "sunrise_time"))
+
+    def get_sunrise_time(self):
+        return self.__sunrise_time
+
+    def only_set_sunset_time(self, time):
+        self.__sunset_time = Time(time)
+
+    def set_sunset_time(self, time):
+        self.only_set_sunset_time(time)
+        mp_logic.mp_logic.change_linkage(self, ("location", "sunset_time"))
+
+    def get_sunset_time(self):
+        return self.__sunset_time

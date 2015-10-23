@@ -349,7 +349,7 @@ class MephistoLogic:
     def change_linkage(self, mp_object, attribute, access_set=None):
         import mp_logic_function
         if access_set is None:
-            access_set = {attribute[1]}
+            access_set = {attribute}
         decide = self.decide_attribute(attribute)
         if decide is None:
             return
@@ -358,28 +358,45 @@ class MephistoLogic:
         for single_attribute in single:
             function = self.decide_function(attribute, single_attribute)
             function_name = function[0]
-            argument_list = function[1]
-            if len(argument_list) == 1 and argument_list[0] == attribute[0]:
-                if single_attribute[1] not in access_set:
-                    mp_logic_function.function_register[function_name](mp_object)
-                    access_set.add(single_attribute[1])
-                    self.change_linkage(mp_object, single_attribute, access_set)
+            if single_attribute not in access_set:
+                mp_logic_function.function_register[function_name](mp_object)
+                access_set.add(single_attribute)
+                self.change_linkage(mp_object, single_attribute, access_set)
         for multi_attribute in multi:
             current_attribute = multi_attribute[0]
             relate_attribute = multi_attribute[1]
             function = self.decide_function(attribute, current_attribute)
             function_name = function[0]
-            argument_list = function[1]
             all_ready = True
             for relate in relate_attribute:
-                if mp_object.get_by_name(relate[1]) is None:
-                    all_ready = False
-                    break
-            if all_ready and len(argument_list) == 1 and argument_list[0] == current_attribute[0]:
-                if current_attribute[1] not in access_set:
-                    mp_logic_function.function_register[function_name](mp_object)
-                    access_set.add(current_attribute[1])
-                    self.change_linkage(mp_object, current_attribute, access_set)
+                if relate[0] != attribute[0]:
+                    if attribute[0] == "location":
+                        bind_earth = mp_object.get_bind_earth()
+                        if bind_earth is None:
+                            all_ready = False
+                            break
+                        if bind_earth.get_by_name(relate[1]) is None:
+                            all_ready = False
+                            break
+                    elif attribute[0] == "earth":
+                        bind_location_list = mp_object.get_bind_location_list()
+                        if len(bind_location_list) == 0:
+                            all_ready = False
+                            break
+                        for bind_location in bind_location_list:
+                            if bind_location.get_by_name(relate[1]) is None:
+                                all_ready = False
+                                break
+                            if all_ready:
+                                break
+                else:
+                    if mp_object.get_by_name(relate[1]) is None:
+                        all_ready = False
+                        break
+            if all_ready and current_attribute not in access_set:
+                mp_logic_function.function_register[function_name](mp_object)
+                access_set.add(current_attribute)
+                self.change_linkage(mp_object, current_attribute, access_set)
 
 
 mp_logic = MephistoLogic(mp_configure.logic_language_file)
