@@ -1,6 +1,7 @@
 import copy
 import math
 from mp_date_time import Date, Time
+from mp_aster import Earth
 import mp_logic
 import mp_configure
 
@@ -339,7 +340,9 @@ class Location:
         self.__longitude_direction_flag = direction_flag[0]
         self.__latitude_direction_flag = direction_flag[-1]
         self.__time_zone = None
+        self.__local_date = None
         self.__local_time = None
+        self.__bind_earth = None
         if longitude is not None:
             self.set_longitude(longitude)
         else:
@@ -357,6 +360,7 @@ class Location:
             "longitude": self.__longitude,
             "latitude": self.__latitude,
             "time_zone": self.__time_zone,
+            "local_date": self.__local_date,
             "local_time": self.__local_time,
         }
         if name not in name_object:
@@ -408,39 +412,53 @@ class Location:
     def get_time_zone(self):
         return self.__time_zone
 
+    def only_set_local_date(self, date):
+        if not isinstance(date, Date):
+            raise Exception("Must input Date instance: %s" % str(type(date)))
+        self.__local_date = copy.copy(date)
+
+    def set_local_date(self, date):
+        self.only_set_local_date(date)
+        mp_logic.mp_logic.change_linkage(self, ("location", "local_date"))
+
+    def get_local_date(self):
+        return self.__local_date
+
     def only_set_local_time(self, time):
-        if not isinstance(time, "Time"):
+        if not isinstance(time, Time):
             raise Exception("Must input Time instance: %s" % str(type(time)))
         self.__local_time = copy.copy(time)
 
     def set_local_time(self, time):
         self.only_set_local_time(time)
+        mp_logic.mp_logic.change_linkage(self, ("location", "local_time"))
 
     def get_local_time(self):
         return self.__local_time
 
-    def compute_time_zone_standardized(self):
+    def only_set_bind_earth(self, earth):
+        if not isinstance(earth, Earth):
+            raise Exception("Must input Earth instance: %s" % str(type(earth)))
+        self.__bind_earth = earth
+
+    def set_bind_earth(self, earth):
+        self.only_set_bind_earth(earth)
+        mp_logic.mp_logic.change_linkage(self, ("location", "bind_earth"))
+
+    def get_bind_earth(self):
+        return self.__bind_earth
+
+    def fresh_bind_earth(self):
+        mp_logic.mp_logic.change_linkage(self, ("location", "bind_earth"))
+
+    def get_time_zone_standardized(self):
         if self.__time_zone is not None:
-            return int(self.__time_zone / 3600 / 15)
+            return int(self.__time_zone / 3600)
         else:
             return None
 
     def compute_greenwich_mean_time(self, time):
         time.backward_second(self.get_time_zone())
-
-    def compute_local_date_time(self, earth):
-        date = Date(earth.get_date())
-        time = Time(earth.get_time())
-        time_number = time.get_time_number()
-        time_number += self.__time_zone
-        if time_number < 0:
-            date.backward_day(1)
-            time_number += 86400
-        elif time_number > 86400:
-            date.forward_day(1)
-            time_number -= 86400
-        time.set_time_number(time_number)
-        return date, time
 
     def compute_arc_distance(self, target_location):
         return location_arc_distance(self, target_location)

@@ -5,11 +5,72 @@ import math
 
 
 def compute_time_zone_by_longitude(location):
-    location.only_set_time_zone(int(location.get_longitude().get_longitude_number() / 15))
+    longitude = location.get_longitude().get_longitude_number()
+    time_zone = int(longitude / 15)
+    location.only_set_time_zone(time_zone)
 
 
 def compute_longitude_by_time_zone(location):
-    location.only_set_longitude(location.get_time_zone() * 15)
+    time_zone = location.get_time_zone()
+    longitude = time_zone * 15
+    location.only_set_longitude(longitude)
+
+
+def compute_local_datetime_by_bind_earth(location):
+    earth = location.get_bind_earth()
+    if earth is None:
+        return
+    earth_date = earth.get_date()
+    earth_time = earth.get_time()
+    if earth_date is not None:
+        earth_date = Date(earth_date)
+    if earth_time is not None:
+        earth_time = Time(earth_time)
+        time_number = earth_time.get_time_number()
+        time_number += location.get_time_zone()
+        if time_number < 0:
+            time_number += 86400
+            if earth_date is not None:
+                earth_date.backward_day(1)
+                location.only_set_local_date(earth_date)
+        elif time_number > 86400:
+            time_number -= 86400
+            if earth_date is not None:
+                earth_date.forward_day(1)
+                location.only_set_local_date(earth_date)
+        else:
+            if earth_date is not None:
+                location.only_set_local_date(earth_date)
+        earth_time.set_time_number(time_number)
+        location.only_set_local_time(earth_time)
+
+
+def compute_bind_earth_by_local_datetime(location):
+    earth = location.get_bind_earth()
+    if earth is None:
+        return
+    local_date = location.get_local_date()
+    local_time = location.get_local_time()
+    if local_date is not None:
+        local_date = Date(local_date)
+    if local_time is not None:
+        local_time = Time(local_time)
+        time_number = local_time.get_time_number()
+        time_number -= location.get_time_zone()
+        if time_number < 0:
+            time_number += 86400
+            if local_date is not None:
+                local_date.backward_day(1)
+                earth.set_date(local_date)
+        elif time_number > 86400:
+            time_number -= 86400
+            if local_date is not None:
+                local_date.forward_day(1)
+                earth.set_date(local_date)
+        else:
+            if local_date is not None:
+                earth.set_date(local_date)
+        earth.set_time(local_time)
 
 
 def compute_declination_by_date(earth):
@@ -38,6 +99,8 @@ def compute_equinox_by_date(earth):
 function_register = {
     "compute_time_zone_by_longitude": compute_time_zone_by_longitude,
     "compute_longitude_by_time_zone": compute_longitude_by_time_zone,
+    "compute_local_datetime_by_bind_earth": compute_local_datetime_by_bind_earth,
+    "compute_bind_earth_by_local_datetime": compute_bind_earth_by_local_datetime,
     "compute_declination_by_date": compute_declination_by_date,
     "compute_equinox_by_date": compute_equinox_by_date,
 }
