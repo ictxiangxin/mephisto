@@ -326,9 +326,11 @@ class MephistoLogic:
         return self.__logic[attribute_from][attribute_to][-1]
 
     def change_linkage(self, mp_object, attribute, access_set=None):
+        # print((id(mp_object), attribute))
+        # print(access_set)
         import mp_logic_function
         if access_set is None:
-            access_set = {attribute}
+            access_set = {(id(mp_object), attribute)}
         decide = self.decide_attribute(attribute)
         if decide is None:
             return
@@ -338,20 +340,21 @@ class MephistoLogic:
             function = self.decide_function(attribute, single_attribute)
             function_name = function[0]
             function_argument = function[1]
-            if single_attribute not in access_set:
-                access_set.add(single_attribute)
-                if single_attribute[0] != attribute[0]:
-                    entity_object = mp_object.get_by_name("bind_" + single_attribute[0])
-                    if entity_object is None:
-                        continue
-                    elif isinstance(entity_object, list):
-                        for i in range(len(entity_object)):
-                            argument = []
-                            for arg in function_argument:
-                                if arg == attribute[0]:
-                                    argument.append(mp_object)
-                                elif arg == single_attribute[0]:
-                                    argument.append(entity_object[i])
+            if single_attribute[0] != attribute[0]:
+                entity_object = mp_object.get_by_name("bind_" + single_attribute[0])
+                if entity_object is None:
+                    continue
+                elif isinstance(entity_object, list):
+                    for i in range(len(entity_object)):
+                        argument = []
+                        for arg in function_argument:
+                            if arg == attribute[0]:
+                                argument.append(mp_object)
+                            elif arg == single_attribute[0]:
+                                argument.append(entity_object[i])
+                        access_id = (id(entity_object[i]), single_attribute)
+                        if access_id not in access_set:
+                            access_set.add(access_id)
                             mp_logic_function.function_register[function_name](*argument)
                             self.change_linkage(entity_object[i], single_attribute, access_set)
                     else:
@@ -361,9 +364,15 @@ class MephistoLogic:
                                 argument.append(mp_object)
                             elif arg == single_attribute[0]:
                                 argument.append(entity_object)
-                        mp_logic_function.function_register[function_name](*argument)
-                        self.change_linkage(entity_object, single_attribute, access_set)
-                else:
+                        access_id = (id(entity_object), single_attribute)
+                        if access_id not in access_set:
+                            access_set.add(access_id)
+                            mp_logic_function.function_register[function_name](*argument)
+                            self.change_linkage(entity_object, single_attribute, access_set)
+            else:
+                access_id = (id(mp_object), single_attribute)
+                if access_id not in access_set:
+                    access_set.add(access_id)
                     mp_logic_function.function_register[function_name](mp_object)
                     self.change_linkage(mp_object, single_attribute, access_set)
         for multi_attribute in multi:
@@ -397,8 +406,6 @@ class MephistoLogic:
                         all_ready = False
                         break
             if all_ready:
-                if current_attribute not in access_set:
-                    access_set.add(current_attribute)
                 entity_set = set([relate[0] for relate in relate_attribute] + [attribute[0], current_attribute[0]])
                 if len(entity_set) != 1:
                     entity_set.remove(attribute[0])
@@ -425,8 +432,11 @@ class MephistoLogic:
                                         argument.append(mp_object)
                                     elif arg == entity_name:
                                         argument.append(entity_object[i])
-                                mp_logic_function.function_register[function_name](*argument)
-                                self.change_linkage(entity_object[i], current_attribute, access_set)
+                                access_id = (id(entity_object[i]), current_attribute)
+                                if access_id not in access_set:
+                                    access_set.add(access_id)
+                                    mp_logic_function.function_register[function_name](*argument)
+                                    self.change_linkage(entity_object[i], current_attribute, access_set)
                     else:
                         argument = []
                         for arg in function_argument:
@@ -434,11 +444,17 @@ class MephistoLogic:
                                 argument.append(mp_object)
                             elif arg == entity_name:
                                 argument.append(entity_object)
-                        mp_logic_function.function_register[function_name](*argument)
-                        self.change_linkage(current_object, current_attribute, access_set)
+                        access_id = (id(entity_object), current_attribute)
+                        if access_id not in access_set:
+                            access_set.add(access_id)
+                            mp_logic_function.function_register[function_name](*argument)
+                            self.change_linkage(current_object, current_attribute, access_set)
                 else:
-                    mp_logic_function.function_register[function_name](mp_object)
-                    self.change_linkage(mp_object, current_attribute, access_set)
+                    access_id = (id(mp_object), current_attribute)
+                    if access_id not in access_set:
+                        access_set.add(access_id)
+                        mp_logic_function.function_register[function_name](mp_object)
+                        self.change_linkage(mp_object, current_attribute, access_set)
 
 
 mp_logic = MephistoLogic(mp_configure.logic_language_file)

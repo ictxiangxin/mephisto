@@ -27,21 +27,21 @@ def compute_day_length_by_sunrise_time(location):
     sunrise_time = location.get_sunrise_time()
     sunrise_time_number = sunrise_time.get_time_number()
     day_length = 86400 - 2 * sunrise_time_number
-    location.set_day_length(mp_date_time.Time(day_length))
+    location.only_set_day_length(mp_date_time.Time(day_length))
 
 
 def compute_sunset_time_by_day_length(location):
     day_length = location.get_day_length()
     day_length_number = day_length.get_time_number()
     sunset_time = int(43200 + day_length_number / 2)
-    location.only_set_sunrise_time(sunset_time)
+    location.only_set_sunset_time(sunset_time)
 
 
 def compute_day_length_by_sunset_time(location):
     sunset_time = location.get_sunset_time()
     sunset_time_number = sunset_time.get_time_number()
     day_length = 2 * sunset_time_number - 86400
-    location.set_day_length(mp_date_time.Time(day_length))
+    location.only_set_day_length(mp_date_time.Time(day_length))
 
 
 def compute_earth_datetime_by_local_datetime(location, earth):
@@ -126,14 +126,20 @@ def compute_noon_sun_height(location, earth):
 
 def compute_day_length(location, earth):
     declination = earth.get_declination()
-    theta = math.atan(math.tan(declination.get_latitude_arc()) * math.tan(location.get_latitude().get_latitude_arc()))
-    theta += 3.4212671791288e-7 / (math.cos(declination.get_latitude_arc()) ** 2 * math.cos(location.get_latitude().get_latitude_arc()) * math.cos(theta))
-    day_length = int((12 + 2 * theta / (2 * math.pi * 24)) * 3600)
+    latitude = location.get_latitude()
+    day_length = 2 * int(43200 * math.acos(-math.tan(declination.get_latitude_arc()) * math.tan(latitude.get_latitude_arc())) / math.pi)
     location.only_set_day_length(day_length)
 
 
 def compute_earth_declination_by_location(location, earth):
-    pass
+    latitude = location.get_latitude()
+    day_length = location.get_day_length().get_time_number() / 2
+    declination = mp_location.Latitude("0.0.0N")
+    latitude_number = latitude.get_latitude_number()
+    if abs(latitude_number) > 3600:
+        declination_number = -math.atan(math.cos(math.pi * day_length / 43200) / math.tan(latitude.get_latitude_arc())) / math.pi * 648000
+        declination.set_latitude_number(int(declination_number))
+    earth.only_set_declination(declination)
 
 
 function_register = {
@@ -149,5 +155,5 @@ function_register = {
     "compute_local_datetime_by_earth": compute_local_datetime_by_earth,
     "compute_noon_sun_height": compute_noon_sun_height,
     "compute_day_length": compute_day_length,
-    "compute_earth_date_by_location": compute_earth_declination_by_location,
+    "compute_earth_declination_by_location": compute_earth_declination_by_location,
 }
