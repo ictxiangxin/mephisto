@@ -1,4 +1,5 @@
-from mp_location import *
+import mp_location
+from mp_date_time import Date, Time
 import mp_logic
 import mp_configure
 
@@ -12,7 +13,7 @@ class Earth:
         self.__spring_equinox = None
         self.__autumnal_equinox = None
         self.__declination = None
-        self.__bind_location_list = []
+        self.__bind_location = []
         if date is not None:
             self.set_date(date)
         else:
@@ -31,6 +32,7 @@ class Earth:
             "spring_equinox": self.__spring_equinox,
             "autumnal_equinox": self.__autumnal_equinox,
             "declination": self.__declination,
+            "bind_location": self.__bind_location
         }
         if name not in name_object:
             return None
@@ -38,12 +40,7 @@ class Earth:
             return name_object[name]
 
     def only_set_date(self, date):
-        if isinstance(date, str):
-            self.__date = Date(date, self.__date_sep_string)
-        elif isinstance(date, Date):
-            self.__date = copy.deepcopy(date)
-        else:
-            raise Exception("Invalid date type: %s" % str(type(date)))
+        self.__date = Date(date)
 
     def set_date(self, date):
         self.only_set_date(date)
@@ -53,12 +50,7 @@ class Earth:
         return self.__date
 
     def only_set_time(self, time):
-        if isinstance(time, str):
-            self.__time = Time(time, self.__time_sep_string)
-        elif isinstance(time, Time):
-            self.__time = copy.deepcopy(time)
-        else:
-            raise Exception("Invalid time type: %s" % str(type(time)))
+        self.__time = Time(time)
 
     def set_time(self, time):
         self.only_set_time(time)
@@ -159,16 +151,20 @@ class Earth:
     def get_autumnal_equinox(self):
         return self.__autumnal_equinox
 
+    def only_set_declination(self, latitude):
+        self.__declination = mp_location.Latitude(latitude)
+
     def set_declination(self, latitude):
-        self.__declination = latitude
+        self.only_set_declination(latitude)
+        mp_logic.mp_logic.change_linkage(self, ("earth", "declination"))
 
     def get_declination(self):
         return self.__declination
 
     def add_bind_location(self, location, from_location=False):
-        self.__bind_location_list.append(location)
+        self.__bind_location.append(location)
         if not from_location:
             location.set_bind_earth(self, from_earth=True)
 
     def get_bind_location_list(self):
-        return self.__bind_location_list
+        return self.__bind_location

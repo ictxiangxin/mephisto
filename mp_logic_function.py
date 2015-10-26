@@ -18,8 +18,6 @@ def compute_longitude_by_time_zone(location):
 
 def compute_local_datetime_by_bind_earth(location):
     earth = location.get_bind_earth()
-    if earth is None:
-        return
     earth_date = earth.get_date()
     earth_time = earth.get_time()
     if earth_date is not None:
@@ -73,10 +71,7 @@ def compute_day_length_by_sunset_time(location):
     location.set_day_length(Time(day_length))
 
 
-def compute_bind_earth_by_local_datetime(location):
-    earth = location.get_bind_earth()
-    if earth is None:
-        return
+def compute_earth_datetime_by_local_datetime(location, earth):
     local_date = location.get_local_date()
     local_time = location.get_local_time()
     if local_date is not None:
@@ -98,6 +93,7 @@ def compute_bind_earth_by_local_datetime(location):
         else:
             if local_date is not None:
                 earth.set_date(local_date)
+        local_time.set_time_number(time_number)
         earth.set_time(local_time)
 
 
@@ -123,33 +119,44 @@ def compute_equinox_by_date(earth):
     earth.set_autumnal_equinox(autumnal_equinox)
 
 
-def compute_local_datetime_by_earth(earth):
+def compute_local_datetime_by_earth(earth, location):
     earth_date = earth.get_date()
     earth_time = earth.get_time()
     if earth_date is not None:
         earth_date = Date(earth_date)
     if earth_time is not None:
         earth_time = Time(earth_time)
-        location_list = earth.get_bind_location_list()
-        for i in range(len(location_list)):
-            location = location_list[i]
-            time_number = earth_time.get_time_number()
-            time_number += location.get_time_zone()
-            if time_number < 0:
-                time_number += 86400
-                if earth_date is not None:
-                    earth_date.backward_day(1)
-                    location.only_set_local_date(earth_date)
-            elif time_number > 86400:
-                time_number -= 86400
-                if earth_date is not None:
-                    earth_date.forward_day(1)
-                    location.only_set_local_date(earth_date)
-            else:
-                if earth_date is not None:
-                    location.only_set_local_date(earth_date)
-            earth_time.set_time_number(time_number)
-            location.only_set_local_time(earth_time)
+        time_number = earth_time.get_time_number()
+        time_number += location.get_time_zone()
+        if time_number < 0:
+            time_number += 86400
+            if earth_date is not None:
+                earth_date.backward_day(1)
+                location.only_set_local_date(earth_date)
+        elif time_number > 86400:
+            time_number -= 86400
+            if earth_date is not None:
+                earth_date.forward_day(1)
+                location.only_set_local_date(earth_date)
+        else:
+            if earth_date is not None:
+                location.only_set_local_date(earth_date)
+        earth_time.set_time_number(time_number)
+        location.only_set_local_time(earth_time)
+
+
+def compute_noon_sun_height(location, earth):
+    latitude_difference = abs(location.get_latitude().get_latitude_number() - earth.get_declination().get_latitude_number())
+    noon_sun_height = 324000 - latitude_difference
+    location.only_set_noon_sun_height(noon_sun_height)
+
+
+def compute_day_length(location, earth):
+    declination = earth.get_declination()
+    theta = math.atan(math.tan(declination.get_latitude_arc()) * math.tan(location.get_latitude().get_latitude_arc()))
+    theta += 3.4212671791288e-7 / (math.cos(declination.get_latitude_arc()) ** 2 * math.cos(location.get_latitude().get_latitude_arc()) * math.cos(theta))
+    day_length = int((12 + 2 * theta / (2 * math.pi * 24)) * 3600)
+    location.only_set_day_length(day_length)
 
 
 function_register = {
@@ -160,8 +167,10 @@ function_register = {
     "compute_day_length_by_sunrise_time": compute_day_length_by_sunrise_time,
     "compute_sunset_time_by_day_length": compute_sunset_time_by_day_length,
     "compute_day_length_by_sunset_time": compute_day_length_by_sunset_time,
-    "compute_bind_earth_by_local_datetime": compute_bind_earth_by_local_datetime,
+    "compute_earth_datetime_by_local_datetime": compute_earth_datetime_by_local_datetime,
     "compute_declination_by_date": compute_declination_by_date,
     "compute_equinox_by_date": compute_equinox_by_date,
     "compute_local_datetime_by_earth": compute_local_datetime_by_earth,
+    "compute_noon_sun_height": compute_noon_sun_height,
+    "compute_day_length": compute_day_length,
 }

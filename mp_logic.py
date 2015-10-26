@@ -358,45 +358,108 @@ class MephistoLogic:
         for single_attribute in single:
             function = self.decide_function(attribute, single_attribute)
             function_name = function[0]
+            function_argument = function[1]
             if single_attribute not in access_set:
-                mp_logic_function.function_register[function_name](mp_object)
                 access_set.add(single_attribute)
-                self.change_linkage(mp_object, single_attribute, access_set)
+                if single_attribute[0] != attribute[0]:
+                    entity_object = mp_object.get_by_name("bind_" + single_attribute[0])
+                    if entity_object is None:
+                        continue
+                    elif isinstance(entity_object, list):
+                        for i in range(len(entity_object)):
+                            argument = []
+                            for arg in function_argument:
+                                if arg == attribute[0]:
+                                    argument.append(mp_object)
+                                elif arg == single_attribute[0]:
+                                    argument.append(entity_object[i])
+                            mp_logic_function.function_register[function_name](*argument)
+                            self.change_linkage(entity_object[i], single_attribute, access_set)
+                    else:
+                        argument = []
+                        for arg in function_argument:
+                            if arg == attribute[0]:
+                                argument.append(mp_object)
+                            elif arg == single_attribute[0]:
+                                argument.append(entity_object)
+                        mp_logic_function.function_register[function_name](*argument)
+                        self.change_linkage(entity_object, single_attribute, access_set)
+                else:
+                    mp_logic_function.function_register[function_name](mp_object)
+                    self.change_linkage(mp_object, single_attribute, access_set)
         for multi_attribute in multi:
             current_attribute = multi_attribute[0]
             relate_attribute = multi_attribute[1]
             function = self.decide_function(attribute, current_attribute)
             function_name = function[0]
+            function_argument = function[1]
             all_ready = True
+            list_attribute_map = {}
             for relate in relate_attribute:
                 if relate[0] != attribute[0]:
-                    if attribute[0] == "location":
-                        bind_earth = mp_object.get_bind_earth()
-                        if bind_earth is None:
+                    entity_object = mp_object.get_by_name("bind_" + relate[0])
+                    if entity_object is None:
+                        all_ready = False
+                        break
+                    elif isinstance(entity_object, list):
+                        if len(entity_object) == 0:
                             all_ready = False
                             break
-                        if bind_earth.get_by_name(relate[1]) is None:
+                        else:
+                            if relate[0] not in list_attribute_map:
+                                list_attribute_map[relate[0]] = []
+                            list_attribute_map[relate[0]].append(relate[1])
+                    else:
+                        if entity_object.get_by_name(relate[1]) is None:
                             all_ready = False
                             break
-                    elif attribute[0] == "earth":
-                        bind_location_list = mp_object.get_bind_location_list()
-                        if len(bind_location_list) == 0:
-                            all_ready = False
-                            break
-                        for bind_location in bind_location_list:
-                            if bind_location.get_by_name(relate[1]) is None:
-                                all_ready = False
-                                break
-                            if all_ready:
-                                break
                 else:
                     if mp_object.get_by_name(relate[1]) is None:
                         all_ready = False
                         break
-            if all_ready and current_attribute not in access_set:
-                mp_logic_function.function_register[function_name](mp_object)
-                access_set.add(current_attribute)
-                self.change_linkage(mp_object, current_attribute, access_set)
+            if all_ready:
+                if current_attribute not in access_set:
+                    access_set.add(current_attribute)
+                entity_set = set([relate[0] for relate in relate_attribute] + [attribute[0], current_attribute[0]])
+                if len(entity_set) != 1:
+                    entity_set.remove(attribute[0])
+                    entity_name = entity_set.pop()
+                    entity_object = mp_object.get_by_name("bind_" + entity_name)
+                    if current_attribute[0] == entity_name:
+                        current_object = entity_object
+                    else:
+                        current_object = mp_object
+                    if entity_object is None:
+                        continue
+                    elif isinstance(current_object, list):
+                        for i in range(len(entity_object)):
+                            all_ready = True
+                            if entity_name in list_attribute_map:
+                                for list_attribute in list_attribute_map[current_attribute[0]]:
+                                    if entity_object[i].get_by_name(list_attribute) is None:
+                                        all_ready = False
+                                        break
+                            if all_ready:
+                                argument = []
+                                for arg in function_argument:
+                                    if arg == attribute[0]:
+                                        argument.append(mp_object)
+                                    elif arg == entity_name:
+                                        argument.append(entity_object[i])
+                                mp_logic_function.function_register[function_name](*argument)
+                                self.change_linkage(entity_object[i], current_attribute, access_set)
+                    else:
+                        argument = []
+                        for arg in function_argument:
+                            if arg == attribute[0]:
+                                argument.append(mp_object)
+                            elif arg == entity_name:
+                                argument.append(entity_object)
+                        mp_logic_function.function_register[function_name](*argument)
+                        self.change_linkage(current_object, current_attribute, access_set)
+                else:
+                    mp_logic_function.function_register[function_name](mp_object)
+                    self.change_linkage(mp_object, current_attribute, access_set)
 
 
 mp_logic = MephistoLogic(mp_configure.logic_language_file)

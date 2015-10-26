@@ -160,6 +160,8 @@ class Longitude:
             self.set_longitude_string(longitude)
         elif isinstance(longitude, int):
             self.set_longitude_number(longitude)
+        elif isinstance(longitude, Longitude):
+            self.set_longitude_number(longitude.get_longitude_number())
         else:
             raise Exception("Invalid longitude type: %s" % str(type(longitude)))
 
@@ -238,6 +240,8 @@ class Latitude:
             self.set_latitude_string(latitude)
         elif isinstance(latitude, int):
             self.set_latitude_number(latitude)
+        elif isinstance(latitude, Latitude):
+            self.set_latitude_number(latitude.get_latitude_number())
         else:
             raise Exception("Invalid latitude type: %s" % str(type(latitude)))
 
@@ -351,31 +355,22 @@ class Location:
         else:
             return name_object[name]
 
-    def _set_longitude(self, longitude):
-        if isinstance(longitude, str) or isinstance(longitude, int):
-            self.__longitude = Longitude(longitude)
-        elif isinstance(longitude, Longitude):
-            self.__longitude = copy.deepcopy(longitude)
-        else:
-            raise Exception("Invalid longitude type: %s" % str(type(longitude)))
+    def only_set_longitude(self, longitude):
+        self.__longitude = Longitude(longitude)
 
     def set_longitude(self, longitude):
-        self._set_longitude(longitude)
+        self.only_set_longitude(longitude)
         mp_logic.mp_logic.change_linkage(self, ("location", "longitude"))
 
     def get_longitude(self):
         return self.__longitude
 
     def only_set_latitude(self, latitude):
-        if isinstance(latitude, str) or isinstance(latitude, int):
-            self.__latitude = Latitude(latitude)
-        elif isinstance(latitude, Latitude):
-            self.__latitude = copy.copy(latitude)
-        else:
-            raise Exception("Invalid longitude type: %s" % str(type(latitude)))
+        self.__latitude = Latitude(latitude)
 
     def set_latitude(self, latitude):
         self.only_set_latitude(latitude)
+        mp_logic.mp_logic.change_linkage(self, ("location", "latitude"))
 
     def get_latitude(self):
         return self.__latitude
@@ -396,9 +391,7 @@ class Location:
         return self.__time_zone
 
     def only_set_local_date(self, date):
-        if not isinstance(date, Date):
-            raise Exception("Must input Date instance: %s" % str(type(date)))
-        self.__local_date = copy.copy(date)
+        self.__local_date = Date(date)
 
     def set_local_date(self, date):
         self.only_set_local_date(date)
@@ -408,9 +401,7 @@ class Location:
         return self.__local_date
 
     def only_set_local_time(self, time):
-        if not isinstance(time, Time):
-            raise Exception("Must input Time instance: %s" % str(type(time)))
-        self.__local_time = copy.copy(time)
+        self.__local_time = Time(time)
 
     def set_local_time(self, time):
         self.only_set_local_time(time)
@@ -470,12 +461,6 @@ class Location:
 
     def get_noon_sun_height(self):
         return self.__noon_sun_height
-
-    def compute_day_length(self, earth):
-        declination = earth.get_declination()
-        theta = math.atan(math.tan(declination.get_latitude_arc()) * math.tan(self.get_latitude().get_latitude_arc()))
-        theta += 3.4212671791288e-7 / (math.cos(declination.get_latitude_arc()) ** 2 * math.cos(self.get_latitude().get_latitude_arc()) * math.cos(theta))
-        return int((12 + 2 * theta / (2 * math.pi * 24)) * 3600)
 
     def only_set_day_length(self, time):
         self.__day_length = Time(time)
