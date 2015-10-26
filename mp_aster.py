@@ -1,5 +1,5 @@
 import mp_location
-from mp_date_time import Date, Time
+import mp_date_time
 import mp_logic
 import mp_configure
 
@@ -40,7 +40,7 @@ class Earth:
             return name_object[name]
 
     def only_set_date(self, date):
-        self.__date = Date(date)
+        self.__date = mp_date_time.Date(date)
 
     def set_date(self, date):
         self.only_set_date(date)
@@ -50,7 +50,7 @@ class Earth:
         return self.__date
 
     def only_set_time(self, time):
-        self.__time = Time(time)
+        self.__time = mp_date_time.Time(time)
 
     def set_time(self, time):
         self.only_set_time(time)

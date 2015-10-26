@@ -1,7 +1,6 @@
-import copy
 import math
-from mp_date_time import Date, Time
-from mp_aster import Earth
+import mp_date_time
+import mp_aster
 import mp_logic
 import mp_configure
 
@@ -391,7 +390,7 @@ class Location:
         return self.__time_zone
 
     def only_set_local_date(self, date):
-        self.__local_date = Date(date)
+        self.__local_date = mp_date_time.Date(date)
 
     def set_local_date(self, date):
         self.only_set_local_date(date)
@@ -401,7 +400,7 @@ class Location:
         return self.__local_date
 
     def only_set_local_time(self, time):
-        self.__local_time = Time(time)
+        self.__local_time = mp_date_time.Time(time)
 
     def set_local_time(self, time):
         self.only_set_local_time(time)
@@ -411,7 +410,7 @@ class Location:
         return self.__local_time
 
     def only_set_bind_earth(self, earth, from_earth=False):
-        if not isinstance(earth, Earth):
+        if not isinstance(earth, mp_aster.Earth):
             raise Exception("Must input Earth instance: %s" % str(type(earth)))
         self.__bind_earth = earth
         if not from_earth:
@@ -463,7 +462,7 @@ class Location:
         return self.__noon_sun_height
 
     def only_set_day_length(self, time):
-        self.__day_length = Time(time)
+        self.__day_length = mp_date_time.Time(time)
 
     def set_day_length(self, time):
         self.only_set_day_length(time)
@@ -473,7 +472,7 @@ class Location:
         return self.__day_length
 
     def only_set_sunrise_time(self, time):
-        self.__sunrise_time = Time(time)
+        self.__sunrise_time = mp_date_time.Time(time)
 
     def set_sunrise_time(self, time):
         self.only_set_sunrise_time(time)
@@ -483,7 +482,7 @@ class Location:
         return self.__sunrise_time
 
     def only_set_sunset_time(self, time):
-        self.__sunset_time = Time(time)
+        self.__sunset_time = mp_date_time.Time(time)
 
     def set_sunset_time(self, time):
         self.only_set_sunset_time(time)

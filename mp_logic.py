@@ -215,36 +215,27 @@ def grammar_analysis(token_list):
                 raise Exception("Invalid goto action: state=%d, non-terminal=%d" % (now_state, now_non_terminal_index))
             stack.append(goto_table[now_state][now_non_terminal_index])
             if operation_number == 0:
-                # start -> logic
                 pass
             elif operation_number == 1:
-                # argument -> name assign data
                 pass
             elif operation_number == 2:
-                # argument_list -> argument
                 argument = symbol_stack.pop()
                 symbol_stack.append([argument])
             elif operation_number == 3:
-                # argument_list -> argument_list separator argument
                 argument = symbol_stack.pop()
                 argument_list = symbol_stack.pop()
                 symbol_stack.append(argument_list + [argument])
             elif operation_number == 4:
-                # argument_list -> ~
                 symbol_stack.append([])
             elif operation_number == 5:
-                # data -> item
                 pass
             elif operation_number == 6:
-                # data -> name
                 pass
             elif operation_number == 7:
-                # function -> name bracket_l argument_list bracket_r
                 argument_list = symbol_stack.pop()
                 name = symbol_stack.pop()
                 symbol_stack.append((name, argument_list))
             elif operation_number == 8:
-                # item -> name dot name
                 name2 = symbol_stack.pop()
                 name1 = symbol_stack.pop()
                 symbol_stack.append((name1, name2))
@@ -253,12 +244,10 @@ def grammar_analysis(token_list):
                 item = symbol_stack.pop()
                 symbol_stack.append([item])
             elif operation_number == 10:
-                # item_list -> item_list separator item
                 item = symbol_stack.pop()
                 item_list = symbol_stack.pop()
                 symbol_stack.append(item_list + [item])
             elif operation_number == 11:
-                # line -> item_list toward item by function end
                 function = symbol_stack.pop()
                 item = symbol_stack.pop()
                 item_list = symbol_stack.pop()
@@ -268,13 +257,10 @@ def grammar_analysis(token_list):
                 logic.append(one_logic)
                 one_logic = {}
             elif operation_number == 12:
-                # logic -> line
                 pass
             elif operation_number == 13:
-                # logic -> logic line
                 pass
             elif operation_number == 14:
-                # argument -> data
                 data = symbol_stack.pop()
                 symbol_stack.append(data)
             else:
@@ -299,16 +285,9 @@ class MephistoLogic:
                     self.__logic[single_condition] = {}
                 self.__logic[single_condition][result] = ("single", function)
             else:
-                for i in range(len(condition)):
-                    multi_condition = condition[i]
-                    if multi_condition not in self.__logic:
-                        self.__logic[multi_condition] = {}
-                    temp_others = []
-                    for j in range(len(condition)):
-                        if i == j:
-                            continue
-                        temp_others.append(condition[j])
-                    self.__logic[multi_condition][result] = ("multi", temp_others, function)
+                if condition[0] not in self.__logic:
+                    self.__logic[condition[0]] = {}
+                self.__logic[condition[0]][result] = ("multi", condition[1:], function)
 
     def decide_attribute(self, attribute):
         if attribute not in self.__logic:

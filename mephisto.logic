@@ -12,4 +12,6 @@ earth.date -> earth.spring_equinox: compute_equinox_by_date(earth);
 earth.date -> location.local_datetime: compute_local_datetime_by_earth(earth, location);
 earth.time -> location.local_datetime: compute_local_datetime_by_earth(earth, location);
 location.latitude, earth.declination -> location.noon_sun_height: compute_noon_sun_height(location, earth);
+earth.declination, location.latitude -> location.noon_sun_height: compute_noon_sun_height(location, earth);
 location.latitude, earth.declination -> location.day_length: compute_day_length(location, earth);
+earth.declination, location.latitude -> location.day_length: compute_day_length(location, earth);
