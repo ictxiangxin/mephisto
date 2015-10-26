@@ -16,33 +16,6 @@ def compute_longitude_by_time_zone(location):
     location.only_set_longitude(longitude)
 
 
-def compute_local_datetime_by_bind_earth(location):
-    earth = location.get_bind_earth()
-    earth_date = earth.get_date()
-    earth_time = earth.get_time()
-    if earth_date is not None:
-        earth_date = mp_date_time.Date(earth_date)
-    if earth_time is not None:
-        earth_time = mp_date_time.Time(earth_time)
-        time_number = earth_time.get_time_number()
-        time_number += location.get_time_zone()
-        if time_number < 0:
-            time_number += 86400
-            if earth_date is not None:
-                earth_date.backward_day(1)
-                location.only_set_local_date(earth_date)
-        elif time_number > 86400:
-            time_number -= 86400
-            if earth_date is not None:
-                earth_date.forward_day(1)
-                location.only_set_local_date(earth_date)
-        else:
-            if earth_date is not None:
-                location.only_set_local_date(earth_date)
-        earth_time.set_time_number(time_number)
-        location.only_set_local_time(earth_time)
-
-
 def compute_sunrise_time_by_day_length(location):
     day_length = location.get_day_length()
     day_length_number = day_length.get_time_number()
@@ -52,7 +25,7 @@ def compute_sunrise_time_by_day_length(location):
 
 def compute_day_length_by_sunrise_time(location):
     sunrise_time = location.get_sunrise_time()
-    sunrise_time_number = sunrise_time.get_time_string()
+    sunrise_time_number = sunrise_time.get_time_number()
     day_length = 86400 - 2 * sunrise_time_number
     location.set_day_length(mp_date_time.Time(day_length))
 
@@ -99,7 +72,7 @@ def compute_earth_datetime_by_local_datetime(location, earth):
 
 def compute_declination_by_date(earth):
     y, m, d = earth.get_date().get_date_tuple()
-    ordinal_number = mp_date_time.month_to_number(m) + d
+    ordinal_number = mp_date_time.month_to_number(m, mp_date_time.is_leap_year(y)) + d
     b = 2 * math.pi * (ordinal_number - 1) / 365
     delta = 0.006918
     delta -= 0.399912 * math.cos(b) + 0.006758 * math.cos(2 * b) + 0.002697 * math.cos(3 * b)
@@ -159,10 +132,13 @@ def compute_day_length(location, earth):
     location.only_set_day_length(day_length)
 
 
+def compute_earth_declination_by_location(location, earth):
+    pass
+
+
 function_register = {
     "compute_time_zone_by_longitude": compute_time_zone_by_longitude,
     "compute_longitude_by_time_zone": compute_longitude_by_time_zone,
-    "compute_local_datetime_by_bind_earth": compute_local_datetime_by_bind_earth,
     "compute_sunrise_time_by_day_length": compute_sunrise_time_by_day_length,
     "compute_day_length_by_sunrise_time": compute_day_length_by_sunrise_time,
     "compute_sunset_time_by_day_length": compute_sunset_time_by_day_length,
@@ -173,4 +149,5 @@ function_register = {
     "compute_local_datetime_by_earth": compute_local_datetime_by_earth,
     "compute_noon_sun_height": compute_noon_sun_height,
     "compute_day_length": compute_day_length,
+    "compute_earth_date_by_location": compute_earth_declination_by_location,
 }

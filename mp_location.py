@@ -175,7 +175,7 @@ class Longitude:
 
     def set_longitude_string(self, longitude_string):
         self.__longitude_number = longitude_string_to_number(longitude_string, sep_string=self.__sep_string, direction_flag=self.__direction_flag)
-        self.__longitude_string = longitude_string
+        self.__longitude_string = number_to_longitude_string(self.__longitude_number)
 
     def get_longitude_string(self):
         return self.__longitude_string
@@ -255,7 +255,7 @@ class Latitude:
 
     def set_latitude_string(self, latitude_string):
         self.__latitude_number = latitude_string_to_number(latitude_string, sep_string=self.__sep_string, direction_flag=self.__direction_flag)
-        self.__latitude_string = latitude_string
+        self.__latitude_string = number_to_latitude_string(self.__latitude_number)
 
     def get_latitude_string(self):
         return self.__latitude_string
@@ -334,7 +334,7 @@ class Location:
             self.__latitude = None
 
     def __str__(self):
-        return " ".join([str(self.get_longitude()), str(self.get_latitude())])
+        return "(" + ", ".join([str(self.get_longitude()), str(self.get_latitude())]) + ")"
 
     def get_by_name(self, name):
         name_object = {
@@ -409,16 +409,12 @@ class Location:
     def get_local_time(self):
         return self.__local_time
 
-    def only_set_bind_earth(self, earth, from_earth=False):
+    def bind_earth(self, earth, from_earth=False):
         if not isinstance(earth, mp_aster.Earth):
             raise Exception("Must input Earth instance: %s" % str(type(earth)))
         self.__bind_earth = earth
         if not from_earth:
             earth.add_bind_location(self, from_location=True)
-
-    def set_bind_earth(self, earth, from_earth=False):
-        self.only_set_bind_earth(earth, from_earth)
-        mp_logic.mp_logic.change_linkage(self, ("location", "bind_earth"))
 
     def get_bind_earth(self):
         return self.__bind_earth
@@ -454,7 +450,7 @@ class Location:
     def only_set_noon_sun_height(self, latitude):
         self.__noon_sun_height = Latitude(latitude)
 
-    def set_noon_sun_height(self, latitude, decide_attribute=None):
+    def set_noon_sun_height(self, latitude):
         self.only_set_day_length(latitude)
         mp_logic.mp_logic.change_linkage(self, ("location", "noon_sun_height"))
 

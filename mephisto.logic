@@ -1,6 +1,5 @@
 location.longitude -> location.time_zone: compute_time_zone_by_longitude(location);
 location.time_zone -> location.longitude: compute_longitude_by_time_zone(location);
-location.bind_earth -> location.local_datetime: compute_local_datetime_by_bind_earth(location);
 location.day_length -> location.sunrise_time: compute_sunrise_time_by_day_length(location);
 location.sunrise_time -> location.day_length: compute_day_length_by_sunrise_time(location);
 location.day_length -> location.sunset_time: compute_sunset_time_by_day_length(location);
@@ -15,3 +14,5 @@ location.latitude, earth.declination -> location.noon_sun_height: compute_noon_s
 earth.declination, location.latitude -> location.noon_sun_height: compute_noon_sun_height(location, earth);
 location.latitude, earth.declination -> location.day_length: compute_day_length(location, earth);
 earth.declination, location.latitude -> location.day_length: compute_day_length(location, earth);
+location.day_length, location.latitude -> earth.declination: compute_earth_declination_by_location(location, earth);
+location.latitude, location.day_length -> earth.declination: compute_earth_declination_by_location(location, earth);

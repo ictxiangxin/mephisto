@@ -89,7 +89,7 @@ def number_to_date_string(number, sep_string=mp_configure.date_sep_string):
         else:
             d = number
             break
-    return sep_string.join([str(y), str(m), str(d)])
+    return sep_string.join(["0" + str(y) if y < 10 else str(y), "0" + str(m) if m < 10 else str(m), "0" + str(d) if d < 10 else str(d)])
 
 
 def time_string_to_number(time_string, sep_string=mp_configure.time_sep_string):
@@ -106,7 +106,7 @@ def number_to_time_string(number, sep_string=mp_configure.time_sep_string):
     number %= 3600
     m = int(number / 60)
     s = number % 60
-    return sep_string.join([str(h), str(m), str(s)])
+    return sep_string.join(["0" + str(h) if h < 10 else str(h), "0" + str(m) if m < 10 else str(m), "0" + str(s) if s < 10 else str(s)])
 
 
 def date_string_distance(date_string_a, date_string_b, sep_string=mp_configure.date_sep_string):

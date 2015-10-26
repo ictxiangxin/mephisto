@@ -24,8 +24,7 @@ class World:
         if not isinstance(location, mp_location.Location):
             raise Exception("Import object is not Location, type: %s" % type(location))
         self.__location[name] = location
-        if self.__earth is not None:
-            location.set_bind_earth(self.__earth)
+        location.bind_earth(self.__earth)
 
     def get_location(self, name):
         if name not in self.__location:

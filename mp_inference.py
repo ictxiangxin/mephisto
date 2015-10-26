@@ -12,10 +12,8 @@ def phenomenon_handle(world):
 
 def inference(world, attribute):
     phenomenon_handle(world)
-    name = attribute[0]
-    elem = attribute[1]
-    if name not in world.get_location_list():
+    if attribute[0] not in world.get_location_list():
         return
-    rst = world.get_location(name).get_by_name(elem)
+    rst = world.get_location(attribute[0]).get_by_name(attribute[1])
     if rst is not None:
         return rst
