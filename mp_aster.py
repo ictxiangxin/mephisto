@@ -16,6 +16,22 @@ class Earth:
         self.__autumnal_equinox = None
         self.__declination = None
         self.__bind_location = []
+        self.__name_object_get = {
+            "date": self.get_date,
+            "time": self.get_time,
+            "spring_equinox": self.get_spring_equinox,
+            "autumnal_equinox": self.get_autumnal_equinox,
+            "declination": self.get_declination,
+            "bind_location": self.get_bind_location,
+        }
+        self.__name_object_set = {
+            "date": self.set_date,
+            "time": self.set_time,
+            "spring_equinox": self.set_spring_equinox,
+            "autumnal_equinox": self.set_autumnal_equinox,
+            "declination": self.set_declination,
+            "bind_location": self.add_bind_location
+        }
         if date is not None:
             self.set_date(date)
         if time is not None:
@@ -25,17 +41,22 @@ class Earth:
         return " ".join([str(self.get_date()), str(self.get_time())])
 
     def get_by_name(self, name):
-        name_object = {
-            "date": self.__date,
-            "spring_equinox": self.__spring_equinox,
-            "autumnal_equinox": self.__autumnal_equinox,
-            "declination": self.__declination,
-            "bind_location": self.__bind_location
-        }
-        if name not in name_object:
+        if name not in self.__name_object_get:
             return None
         else:
-            return name_object[name]
+            return self.__name_object_get[name]()
+
+    def set_by_name(self, name, data):
+        if name in self.__name_object_set:
+            self.__name_object_set[name](data)
+
+    def get_available_name_list(self):
+        available_name_list = []
+        name_list = ["name", "spring_equinox", "autumnal_equinox", "declination"]
+        for name in name_list:
+            if self.get_by_name(name):
+                available_name_list.append(name)
+        return available_name_list
 
     def only_set_date(self, date):
         self.__date = mp_date_time.Date(date)
@@ -170,5 +191,5 @@ class Earth:
         if not from_location:
             location.set_bind_earth(self, from_earth=True)
 
-    def get_bind_location_list(self):
+    def get_bind_location(self):
         return self.__bind_location

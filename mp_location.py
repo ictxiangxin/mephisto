@@ -326,6 +326,30 @@ class Location:
         self.__day_length = None
         self.__sunrise_time = None
         self.__sunset_time = None
+        self.__name_object_get = {
+            "longitude": self.get_longitude,
+            "latitude": self.get_latitude,
+            "time_zone": self.get_time_zone,
+            "local_date": self.get_local_date,
+            "local_time": self.get_local_time,
+            "bind_earth": self.get_bind_earth,
+            "noon_sun_height": self.get_noon_sun_height,
+            "day_length": self.get_day_length,
+            "sunrise_time": self.get_sunrise_time,
+            "sunset_time": self.get_sunset_time,
+        }
+        self.__name_object_set = {
+            "longitude": self.set_longitude,
+            "latitude": self.set_latitude,
+            "time_zone": self.set_time_zone,
+            "local_date": self.set_local_date,
+            "local_time": self.set_local_time,
+            "bind_earth": self.bind_earth,
+            "noon_sun_height": self.set_noon_sun_height,
+            "day_length": self.set_day_length,
+            "sunrise_time": self.set_sunrise_time,
+            "sunset_time": self.set_sunset_time,
+        }
         if longitude is not None:
             self.set_longitude(longitude)
         if latitude is not None:
@@ -335,22 +359,14 @@ class Location:
         return "(" + ", ".join([str(self.get_longitude()), str(self.get_latitude())]) + ")"
 
     def get_by_name(self, name):
-        name_object = {
-            "longitude": self.__longitude,
-            "latitude": self.__latitude,
-            "time_zone": self.__time_zone,
-            "local_date": self.__local_date,
-            "local_time": self.__local_time,
-            "bind_earth": self.__bind_earth,
-            "noon_sun_height": self.__noon_sun_height,
-            "day_length": self.__day_length,
-            "sunrise_time": self.__sunrise_time,
-            "sunset_time": self.__sunset_time,
-        }
-        if name not in name_object:
+        if name not in self.__name_object_get:
             return None
         else:
-            return name_object[name]
+            return self.__name_object_get[name]()
+
+    def set_by_name(self, name, data):
+        if name in self.__name_object_set:
+            self.__name_object_set[name](data)
 
     def only_set_longitude(self, longitude):
         self.__longitude = Longitude(longitude)
@@ -381,9 +397,6 @@ class Location:
         self.only_set_time_zone(time_zone_second)
         mp_logic.mp_logic.change_linkage(self, ("location", "time_zone"))
 
-    def set_time_zone_standardized(self, time_zone_standardized):
-        self.set_time_zone(time_zone_standardized * 15 * 3600)
-
     def get_time_zone(self):
         return self.__time_zone
 
@@ -413,18 +426,11 @@ class Location:
         self.__bind_earth = earth
         if not from_earth:
             earth.add_bind_location(self, from_location=True)
+        for name in self.__bind_earth.get_available_name_list():
+            mp_logic.mp_logic.change_linkage(self.__bind_earth, ("earth", name))
 
     def get_bind_earth(self):
         return self.__bind_earth
-
-    def fresh_bind_earth(self):
-        mp_logic.mp_logic.change_linkage(self, ("location", "bind_earth"))
-
-    def get_time_zone_standardized(self):
-        if self.__time_zone is not None:
-            return int(self.__time_zone / 3600)
-        else:
-            return None
 
     def compute_greenwich_mean_time(self, time):
         time.backward_second(self.get_time_zone())
@@ -440,10 +446,6 @@ class Location:
 
     def compute_direction_eight_party(self, target_location):
         return location_eight_party(self, target_location)
-
-    def compute_noon_sun_height(self, earth):
-        latitude_difference = abs(self.__latitude.get_latitude_number() - earth.get_declination().get_latitude_number())
-        return 324000 - latitude_difference
 
     def only_set_noon_sun_height(self, latitude):
         self.__noon_sun_height = Latitude(latitude)
