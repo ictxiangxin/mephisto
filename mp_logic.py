@@ -326,8 +326,6 @@ class MephistoLogic:
         return self.__logic[attribute_from][attribute_to][-1]
 
     def change_linkage(self, mp_object, attribute, access_set=None):
-        # print((id(mp_object), attribute))
-        # print(access_set)
         import mp_logic_function
         if access_set is None:
             access_set = {(id(mp_object), attribute)}
@@ -418,11 +416,11 @@ class MephistoLogic:
                     if entity_object is None:
                         continue
                     elif isinstance(current_object, list):
-                        for i in range(len(entity_object)):
+                        for i in range(len(current_object)):
                             all_ready = True
                             if entity_name in list_attribute_map:
                                 for list_attribute in list_attribute_map[current_attribute[0]]:
-                                    if entity_object[i].get_by_name(list_attribute) is None:
+                                    if current_object[i].get_by_name(list_attribute) is None:
                                         all_ready = False
                                         break
                             if all_ready:
@@ -431,12 +429,12 @@ class MephistoLogic:
                                     if arg == attribute[0]:
                                         argument.append(mp_object)
                                     elif arg == entity_name:
-                                        argument.append(entity_object[i])
-                                access_id = (id(entity_object[i]), current_attribute)
+                                        argument.append(current_object[i])
+                                access_id = (id(current_object[i]), current_attribute)
                                 if access_id not in access_set:
                                     access_set.add(access_id)
                                     mp_logic_function.function_register[function_name](*argument)
-                                    self.change_linkage(entity_object[i], current_attribute, access_set)
+                                    self.change_linkage(current_object[i], current_attribute, access_set)
                     else:
                         argument = []
                         for arg in function_argument:

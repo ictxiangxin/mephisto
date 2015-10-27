@@ -316,6 +316,8 @@ class Location:
         self.__sep_string = sep_string
         self.__longitude_direction_flag = direction_flag[0]
         self.__latitude_direction_flag = direction_flag[-1]
+        self.__longitude = None
+        self.__latitude = None
         self.__time_zone = None
         self.__local_date = None
         self.__local_time = None
@@ -326,12 +328,8 @@ class Location:
         self.__sunset_time = None
         if longitude is not None:
             self.set_longitude(longitude)
-        else:
-            self.__longitude = None
         if latitude is not None:
             self.set_latitude(latitude)
-        else:
-            self.__latitude = None
 
     def __str__(self):
         return "(" + ", ".join([str(self.get_longitude()), str(self.get_latitude())]) + ")"

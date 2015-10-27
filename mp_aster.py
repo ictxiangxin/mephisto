@@ -10,18 +10,16 @@ class Earth:
         self.__time_sep_string = time_sep_string
         self.__location_sep_string = location_sep_string
         self.__direction_flag = direction_flag
+        self.__date = None
+        self.__time = None
         self.__spring_equinox = None
         self.__autumnal_equinox = None
         self.__declination = None
         self.__bind_location = []
         if date is not None:
             self.set_date(date)
-        else:
-            self.__date = None
         if time is not None:
             self.set_time(time)
-        else:
-            self.__time = None
 
     def __str__(self):
         return " ".join([str(self.get_date()), str(self.get_time())])
@@ -139,14 +137,20 @@ class Earth:
         self.__date.backward_year(y)
         mp_logic.mp_logic.change_linkage(self, ("earth", "date"))
 
+    def only_set_spring_equinox(self, date):
+        self.__spring_equinox = mp_date_time.Date(date)
+
     def set_spring_equinox(self, date):
-        self.__spring_equinox = date
+        self.only_set_spring_equinox(date)
 
     def get_spring_equinox(self):
         return self.__spring_equinox
 
+    def only_set_autumnal_equinox(self, date):
+        self.__autumnal_equinox = mp_date_time.Date(date)
+
     def set_autumnal_equinox(self, date):
-        self.__autumnal_equinox = date
+        self.only_set_autumnal_equinox(date)
 
     def get_autumnal_equinox(self):
         return self.__autumnal_equinox

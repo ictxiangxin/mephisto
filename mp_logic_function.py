@@ -57,17 +57,17 @@ def compute_earth_datetime_by_local_datetime(location, earth):
             time_number += 86400
             if local_date is not None:
                 local_date.backward_day(1)
-                earth.set_date(local_date)
+                earth.only_set_date(local_date)
         elif time_number > 86400:
             time_number -= 86400
             if local_date is not None:
                 local_date.forward_day(1)
-                earth.set_date(local_date)
+                earth.only_set_date(local_date)
         else:
             if local_date is not None:
-                earth.set_date(local_date)
+                earth.only_set_date(local_date)
         local_time.set_time_number(time_number)
-        earth.set_time(local_time)
+        earth.only_set_time(local_time)
 
 
 def compute_declination_by_date(earth):
@@ -77,7 +77,7 @@ def compute_declination_by_date(earth):
     delta = 0.006918
     delta -= 0.399912 * math.cos(b) + 0.006758 * math.cos(2 * b) + 0.002697 * math.cos(3 * b)
     delta += 0.070257 * math.sin(b) + 0.000907 * math.sin(2 * b) + 0.001480 * math.sin(3 * b)
-    earth.set_declination(mp_location.Latitude(int(648000 / math.pi * delta), sep_string=earth.get_location_sep_string(), direction_flag=earth.get_direction_flag()[-1]))
+    earth.only_set_declination(mp_location.Latitude(int(648000 / math.pi * delta), sep_string=earth.get_location_sep_string(), direction_flag=earth.get_direction_flag()[-1]))
 
 
 def compute_equinox_by_date(earth):
@@ -88,8 +88,8 @@ def compute_equinox_by_date(earth):
     sprint_equinox = mp_date_time.Date(earth.get_date_sep_string().join([str(y), str(m), str(d)]))
     autumnal_equinox = copy.deepcopy(sprint_equinox)
     autumnal_equinox.forward_day(186)
-    earth.set_spring_equinox(sprint_equinox)
-    earth.set_autumnal_equinox(autumnal_equinox)
+    earth.only_set_spring_equinox(sprint_equinox)
+    earth.only_set_autumnal_equinox(autumnal_equinox)
 
 
 def compute_local_datetime_by_earth(earth, location):
@@ -142,6 +142,13 @@ def compute_earth_declination_by_location(location, earth):
     earth.only_set_declination(declination)
 
 
+def compute_time_zone_by_local_time_and_earth_time(location, earth):
+    local_time = location.get_local_time()
+    earth_time = earth.get_time()
+    time_zone = (local_time.get_time_number() - earth_time.get_time_number()) % 43200
+    location.only_set_time_zone(time_zone)
+
+
 function_register = {
     "compute_time_zone_by_longitude": compute_time_zone_by_longitude,
     "compute_longitude_by_time_zone": compute_longitude_by_time_zone,
@@ -156,4 +163,5 @@ function_register = {
     "compute_noon_sun_height": compute_noon_sun_height,
     "compute_day_length": compute_day_length,
     "compute_earth_declination_by_location": compute_earth_declination_by_location,
+    "compute_time_zone_by_local_time_and_earth_time": compute_time_zone_by_local_time_and_earth_time,
 }
