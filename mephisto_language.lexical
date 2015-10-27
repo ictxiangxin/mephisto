@@ -1,0 +1,10 @@
+%ignore skip;
+%newline newline;
+
+"[_a-z][_a-z]*"     operator;
+"\".*?[^\\]\"|\"\"" string;
+"\("                bracket_left;
+"\)"                bracket_right;
+"\,"                comma;
+"\t|\ "             skip;
+"\r\n|\n"           newline;

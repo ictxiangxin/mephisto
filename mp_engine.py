@@ -20,6 +20,9 @@ class World:
     def get_earth(self):
         return self.__earth
 
+    def set_earth_attribute(self, attribute_name, data):
+        self.__earth.set_by_name(attribute_name, data)
+
     def add_location(self, name, location):
         if not isinstance(location, mp_location.Location):
             raise Exception("Import object is not Location, type: %s" % type(location))
@@ -34,18 +37,17 @@ class World:
     def get_location_list(self):
         return list(self.__location)
 
-    def add_phenomenon(self, location_name, phenomenon_name):
-        if location_name not in self.__location:
-            raise Exception("Invalid location name: %s" % location_name)
-        if phenomenon_name not in mp_phenomenon.phenomenon_map:
-            raise Exception("Invalid phenomenon name: %s" % phenomenon_name)
-        if location_name not in self.__phenomenon:
-            self.__phenomenon[location_name] = []
-        self.__phenomenon[location_name].append(phenomenon_name)
-
-    def get_phenomenon(self, name):
-        if name not in self.__phenomenon:
-            return None
-        return self.__phenomenon[name]
+    def set_location_attribute(self, name, attribute_name, data):
+        if name in self.__location:
+            self.__location[name].set_by_name(attribute_name, data)
 
 
+class MephistoEngine:
+    def __init__(self):
+        self.__world = World()
+        self.__variable = {}
+
+    def execute_code(self, code):
+        import mp_mephisto_language
+        token_list = mp_mephisto_language.mephisto_language_lexical(code)
+        code_list = mp_mephisto_language.mephisto_language_grammar(token_list)
