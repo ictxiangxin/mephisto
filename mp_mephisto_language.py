@@ -34,15 +34,16 @@ terminal_index = {
 
 action_table = [
     ["s2",  "e",   "e",   "e",   "e",    "e"],
-    ["r1",  "e",   "e",   "e",   "e",   "r1"],
-    ["e",   "e",   "e",   "s4",  "e",    "e"],
     ["s2",  "e",   "e",   "e",   "e",    "a"],
-    ["e",   "e",   "e",   "e",   "s6",   "e"],
+    ["e",   "e",   "e",   "s5",  "e",    "e"],
+    ["r1",  "e",   "e",   "e",   "e",   "r1"],
     ["r2",  "e",   "e",   "e",   "e",   "r2"],
+    ["e",   "e",   "s6",  "e",   "e",    "e"],
+    ["e",   "e",   "e",   "e",   "s7",   "e"],
     ["e",   "r4",  "r4",  "e",   "e",    "e"],
-    ["e",   "s8",  "s9",  "e",   "e",    "e"],
+    ["e",   "s10", "s9",  "e",   "e",    "e"],
+    ["e",   "e",   "e",   "e",   "s11",  "e"],
     ["r3",  "e",   "e",   "e",   "e",   "r3"],
-    ["e",   "e",   "e",   "e",   "s10",  "e"],
     ["e",   "r5",  "r5",  "e",   "e",    "e"],
 ]
 
@@ -53,12 +54,13 @@ non_terminal_index = {
 }
 
 goto_table = [
-    [1,  3,  -1],
+    [3,  1,  -1],
+    [4,  -1, -1],
     [-1, -1, -1],
     [-1, -1, -1],
-    [5,  -1, -1],
-    [-1, -1,  7],
     [-1, -1, -1],
+    [-1, -1, -1],
+    [-1, -1,  8],
     [-1, -1, -1],
     [-1, -1, -1],
     [-1, -1, -1],
@@ -70,7 +72,7 @@ reduce_symbol_sum = {
     0: 1,
     1: 1,
     2: 2,
-    3: 4,
+    3: 5,
     4: 1,
     5: 3,
 }
@@ -134,7 +136,7 @@ def mephisto_language_grammar(token_list):
             operation_number = int(operation[1:])
             stack.append(operation_number)
             token_index += 1
-            if token_type in {"operator", "string"}:
+            if token_type in {"string", "operator"}:
                 symbol_stack.append(token)
         elif operation_flag == "r":
             operation_number = int(operation[1:])
@@ -161,16 +163,16 @@ def mephisto_language_grammar(token_list):
             elif operation_number == 3:
                 string_list = symbol_stack.pop()
                 operator = symbol_stack.pop()
-                boson_reduce = (operator, tuple(string_list))
+                boson_reduce = (operator[1], tuple(string_list))
                 symbol_stack.append(boson_reduce)
             elif operation_number == 4:
                 string = symbol_stack.pop()
-                boson_reduce = [string]
+                boson_reduce = [string[1][1:-1]]
                 symbol_stack.append(boson_reduce)
             elif operation_number == 5:
                 string = symbol_stack.pop()
                 string_list = symbol_stack.pop()
-                boson_reduce = string_list + [string]
+                boson_reduce = string_list + [string[1][1:-1]]
                 symbol_stack.append(boson_reduce)
             else:
                 raise Exception("Invalid reduce number: %d" % operation_number)

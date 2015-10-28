@@ -11,7 +11,7 @@ instruction_list : instruction_list instruction {$$ = $1 + [$2]}
                  | instruction {$$ = [$1]}
                  ;
 
-instruction : bracket_left operator string_list bracket_right {$$ = ($2, tuple($3))}
+instruction : bracket_left operator comma string_list bracket_right {$$ = ($2, tuple($4))}
             ;
 
 string_list : string_list comma string {$$ = $1 + [$3]}
