@@ -240,7 +240,6 @@ def grammar_analysis(token_list):
                 name1 = symbol_stack.pop()
                 symbol_stack.append((name1, name2))
             elif operation_number == 9:
-                # item_list -> item
                 item = symbol_stack.pop()
                 symbol_stack.append([item])
             elif operation_number == 10:
@@ -442,7 +441,7 @@ class MephistoLogic:
                                 argument.append(mp_object)
                             elif arg == entity_name:
                                 argument.append(entity_object)
-                        access_id = (id(entity_object), current_attribute)
+                        access_id = (id(current_object), current_attribute)
                         if access_id not in access_set:
                             access_set.add(access_id)
                             mp_logic_function.function_register[function_name](*argument)
