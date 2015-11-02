@@ -325,8 +325,6 @@ class MephistoLogic:
         return self.__logic[attribute_from][attribute_to][-1]
 
     def change_linkage(self, mp_object, attribute, access_set=None):
-        # print(attribute)
-        # print(access_set)
         import mp_logic_function
         if access_set is None:
             access_set = {(id(mp_object), attribute)}
