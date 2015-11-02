@@ -32,6 +32,14 @@ class Earth:
             "declination": self.set_declination,
             "bind_location": self.add_bind_location
         }
+        self.__static_attribute = {
+            "date": False,
+            "time": False,
+            "spring_equinox": False,
+            "autumnal_equinox": False,
+            "declination": False,
+            "bind_location": False
+        }
         if date is not None:
             self.set_date(date)
         if time is not None:
@@ -49,6 +57,19 @@ class Earth:
     def set_by_name(self, name, data):
         if name in self.__name_object_set:
             self.__name_object_set[name](data)
+
+    def static_attribute(self, name):
+        if name not in self.__static_attribute:
+            return False
+        return self.__static_attribute[name]
+
+    def set_static_attribute(self, name):
+        if name in self.__static_attribute:
+            self.__static_attribute[name] = True
+
+    def unset_static_attribute(self, name):
+        if name in self.__static_attribute:
+            self.__static_attribute[name] = False
 
     def get_available_name_list(self):
         available_name_list = []

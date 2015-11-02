@@ -325,6 +325,8 @@ class MephistoLogic:
         return self.__logic[attribute_from][attribute_to][-1]
 
     def change_linkage(self, mp_object, attribute, access_set=None):
+        # print(attribute)
+        # print(access_set)
         import mp_logic_function
         if access_set is None:
             access_set = {(id(mp_object), attribute)}
@@ -337,6 +339,7 @@ class MephistoLogic:
             function = self.decide_function(attribute, single_attribute)
             function_name = function[0]
             function_argument = function[1]
+            source_static = mp_object.static_attribute(attribute[1])
             if single_attribute[0] != attribute[0]:
                 entity_object = mp_object.get_by_name("bind_" + single_attribute[0])
                 if entity_object is None:
@@ -350,27 +353,36 @@ class MephistoLogic:
                             elif arg == single_attribute[0]:
                                 argument.append(entity_object[i])
                         access_id = (id(entity_object[i]), single_attribute)
-                        if access_id not in access_set:
+                        target_static = entity_object[i].static_attribute(single_attribute[1])
+                        if access_id not in access_set and not target_static:
                             access_set.add(access_id)
                             mp_logic_function.function_register[function_name](*argument)
+                            if source_static:
+                                entity_object[i].set_static_attribute(single_attribute[1])
                             self.change_linkage(entity_object[i], single_attribute, access_set)
-                    else:
-                        argument = []
-                        for arg in function_argument:
-                            if arg == attribute[0]:
-                                argument.append(mp_object)
-                            elif arg == single_attribute[0]:
-                                argument.append(entity_object)
-                        access_id = (id(entity_object), single_attribute)
-                        if access_id not in access_set:
-                            access_set.add(access_id)
-                            mp_logic_function.function_register[function_name](*argument)
-                            self.change_linkage(entity_object, single_attribute, access_set)
+                else:
+                    argument = []
+                    for arg in function_argument:
+                        if arg == attribute[0]:
+                            argument.append(mp_object)
+                        elif arg == single_attribute[0]:
+                            argument.append(entity_object)
+                    access_id = (id(entity_object), single_attribute)
+                    target_static = entity_object.static_attribute(single_attribute[1])
+                    if access_id not in access_set and not target_static:
+                        access_set.add(access_id)
+                        mp_logic_function.function_register[function_name](*argument)
+                        if source_static:
+                            entity_object.set_static_attribute(single_attribute[1])
+                        self.change_linkage(entity_object, single_attribute, access_set)
             else:
                 access_id = (id(mp_object), single_attribute)
-                if access_id not in access_set:
+                target_static = mp_object.static_attribute(single_attribute[1])
+                if access_id not in access_set and not target_static:
                     access_set.add(access_id)
                     mp_logic_function.function_register[function_name](mp_object)
+                    if source_static:
+                        mp_object.set_static_attribute(single_attribute[1])
                     self.change_linkage(mp_object, single_attribute, access_set)
         for multi_attribute in multi:
             current_attribute = multi_attribute[0]
@@ -379,16 +391,19 @@ class MephistoLogic:
             function_name = function[0]
             function_argument = function[1]
             all_ready = True
+            source_static = mp_object.static_attribute(attribute[1])
             list_attribute_map = {}
             for relate in relate_attribute:
                 if relate[0] != attribute[0]:
                     entity_object = mp_object.get_by_name("bind_" + relate[0])
                     if entity_object is None:
                         all_ready = False
+                        source_static = False
                         break
                     elif isinstance(entity_object, list):
                         if len(entity_object) == 0:
                             all_ready = False
+                            source_static = False
                             break
                         else:
                             if relate[0] not in list_attribute_map:
@@ -397,11 +412,17 @@ class MephistoLogic:
                     else:
                         if entity_object.get_by_name(relate[1]) is None:
                             all_ready = False
+                            source_static = False
                             break
+                        elif not entity_object.static_attribute(relate[1]):
+                            source_static = False
                 else:
                     if mp_object.get_by_name(relate[1]) is None:
                         all_ready = False
+                        source_static = False
                         break
+                    elif not mp_object.static_attribute(relate[1]):
+                        source_static = False
             if all_ready:
                 entity_set = set([relate[0] for relate in relate_attribute] + [attribute[0], current_attribute[0]])
                 if len(entity_set) != 1:
@@ -421,7 +442,10 @@ class MephistoLogic:
                                 for list_attribute in list_attribute_map[current_attribute[0]]:
                                     if current_object[i].get_by_name(list_attribute) is None:
                                         all_ready = False
+                                        source_static = False
                                         break
+                                    elif not current_object[i].static_attribute(list_attribute):
+                                        source_static = False
                             if all_ready:
                                 argument = []
                                 for arg in function_argument:
@@ -430,9 +454,12 @@ class MephistoLogic:
                                     elif arg == entity_name:
                                         argument.append(current_object[i])
                                 access_id = (id(current_object[i]), current_attribute)
-                                if access_id not in access_set:
+                                target_static = current_object[i].static_attribute(current_attribute[1])
+                                if access_id not in access_set and not target_static:
                                     access_set.add(access_id)
                                     mp_logic_function.function_register[function_name](*argument)
+                                    if source_static:
+                                        current_object[i].set_static_attribute(current_attribute[1])
                                     self.change_linkage(current_object[i], current_attribute, access_set)
                     else:
                         argument = []
@@ -442,15 +469,21 @@ class MephistoLogic:
                             elif arg == entity_name:
                                 argument.append(entity_object)
                         access_id = (id(current_object), current_attribute)
-                        if access_id not in access_set:
+                        target_static = current_object.static_attribute(current_attribute[1])
+                        if access_id not in access_set and not target_static:
                             access_set.add(access_id)
                             mp_logic_function.function_register[function_name](*argument)
+                            if source_static:
+                                current_object.set_static_attribute(current_attribute[1])
                             self.change_linkage(current_object, current_attribute, access_set)
                 else:
                     access_id = (id(mp_object), current_attribute)
-                    if access_id not in access_set:
+                    target_static = mp_object.static_attribute(current_attribute[1])
+                    if access_id not in access_set and not target_static:
                         access_set.add(access_id)
                         mp_logic_function.function_register[function_name](mp_object)
+                        if source_static:
+                            mp_object.set_static_attribue(current_attribute[1])
                         self.change_linkage(mp_object, current_attribute, access_set)
 
 

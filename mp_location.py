@@ -350,6 +350,18 @@ class Location:
             "sunrise_time": self.set_sunrise_time,
             "sunset_time": self.set_sunset_time,
         }
+        self.__static_attribute = {
+            "longitude": False,
+            "latitude": False,
+            "time_zone": False,
+            "local_date": False,
+            "local_time": False,
+            "bind_earth": False,
+            "noon_sun_height": False,
+            "day_length": False,
+            "sunrise_time": False,
+            "sunset_time": False,
+        }
         if longitude is not None:
             self.set_longitude(longitude)
         if latitude is not None:
@@ -367,6 +379,19 @@ class Location:
     def set_by_name(self, name, data):
         if name in self.__name_object_set:
             self.__name_object_set[name](data)
+
+    def static_attribute(self, name):
+        if name not in self.__static_attribute:
+            return False
+        return self.__static_attribute[name]
+
+    def set_static_attribute(self, name):
+        if name in self.__static_attribute:
+            self.__static_attribute[name] = True
+
+    def unset_static_attribute(self, name):
+        if name  in self.__static_attribute:
+            self.__static_attribute[name] = False
 
     def only_set_longitude(self, longitude):
         self.__longitude = Longitude(longitude)

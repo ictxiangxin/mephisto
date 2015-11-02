@@ -28,6 +28,9 @@ class World:
     def set_earth_attribute(self, attribute_name, data):
         self.__earth.set_by_name(attribute_name, data)
 
+    def set_earth_static_attribute(self, attribute_name):
+        self.__earth.set_static_attribute(attribute_name)
+
     def add_location(self, name, location):
         if not isinstance(location, mp_location.Location):
             raise Exception("Import object is not Location, type: %s" % type(location))
@@ -45,6 +48,10 @@ class World:
     def set_location_attribute(self, name, attribute_name, data):
         if name in self.__location:
             self.__location[name].set_by_name(attribute_name, data)
+
+    def set_location_static_attribute(self, name, attribute_name):
+        if name in self.__location:
+            self.__location[name].set_static_attribute(attribute_name)
 
 
 class MephistoEngine:
@@ -66,6 +73,76 @@ class MephistoEngine:
             return None
         return self.__variable[name]
 
+    def opcode_location(self, operand):
+        location_name = operand[0]
+        temp_location = mp_location.Location()
+        self.__world.add_location(location_name, temp_location)
+
+    def opcode_init(self, operand):
+        location_name = operand[0]
+        attribute_name = operand[1]
+        if location_name == mp_configure.earth_name:
+            self.__world.set_earth_static_attribute(attribute_name)
+        else:
+            self.__world.set_location_static_attribute(location_name, attribute_name)
+        self.opcode_set(operand)
+
+    def opcode_set(self, operand):
+        location_name = operand[0]
+        attribute_name = operand[1]
+        data_type = operand[2]
+        data = operand[3]
+        if data_type == "const":
+            pass
+        elif data_type == "var":
+            variable_name = data
+            data = self.get_variable(variable_name)
+        else:
+            raise Exception("Invalid data type: %s" % data_type)
+        if location_name == mp_configure.earth_name:
+            self.__world.set_earth_attribute(attribute_name, data)
+        else:
+            self.__world.set_location_attribute(location_name, attribute_name, data)
+
+    def opcode_let(self, operand):
+        variable_name = operand[0]
+        data_type = operand[1]
+        if data_type == "attr":
+            location_name = operand[2]
+            attribute_name = operand[3]
+            data = self.__world.get_location(location_name).get_by_name(attribute_name)
+            self.set_variable(variable_name, data)
+        else:
+            raise Exception("Invalid data type: %s" % data_type)
+
+    def opcode_event(self, operand):
+        location_name = operand[0]
+        event_name = operand[1]
+        event_function = mp_phenomenon.phenomenon_implementation(event_name)
+        if event_function is None:
+            raise Exception("Phenomenon [%s] is not exist." % event_name)
+        if location_name == mp_configure.earth_name:
+            event_function(self.__world.get_earth())
+        else:
+            event_function(self.__world.get_location(location_name))
+
+    def opcode_output(self, operand):
+        data_type = operand[0]
+        if data_type == "attr":
+            location_name = operand[1]
+            attribute_name = operand[2]
+            if location_name == mp_configure.earth_name:
+                data = self.__world.get_earth().get_by_name(attribute_name)
+            else:
+                data = self.__world.get_location(location_name).get_by_name(attribute_name)
+            return str(data)
+        elif data_type == "var":
+            variable_name = operand[0]
+            data = self.get_variable(variable_name)
+            return str(data)
+        else:
+            raise Exception("Invalid data type: %s" % data_type)
+
     def execute_code(self, code):
         import mp_mephisto_language
         token_list = mp_mephisto_language.mephisto_language_lexical(code)
@@ -74,60 +151,16 @@ class MephistoEngine:
             opcode = each_code[0]
             operand = each_code[1]
             if opcode == "location":
-                location_name = operand[0]
-                temp_location = mp_location.Location()
-                self.__world.add_location(location_name, temp_location)
+                self.opcode_location(operand)
+            elif opcode == "init":
+                self.opcode_init(operand)
             elif opcode == "set":
-                location_name = operand[0]
-                attribute_name = operand[1]
-                data_type = operand[2]
-                data = operand[3]
-                if data_type == "const":
-                    pass
-                elif data_type == "var":
-                    variable_name = data
-                    data = self.get_variable(variable_name)
-                else:
-                    raise Exception("Invalid data type: %s" % data_type)
-                if location_name == mp_configure.earth_name:
-                    self.__world.set_earth_attribute(attribute_name, data)
-                else:
-                    self.__world.set_location_attribute(location_name, attribute_name, data)
+                self.opcode_set(operand)
             elif opcode == "let":
-                variable_name = operand[0]
-                data_type = operand[1]
-                if data_type == "attr":
-                    location_name = operand[2]
-                    attribute_name = operand[3]
-                    data = self.__world.get_location(location_name).get_by_name(attribute_name)
-                    self.set_variable(variable_name, data)
-                else:
-                    raise Exception("Invalid data type: %s" % data_type)
+                self.opcode_let(operand)
             elif opcode == "event":
-                location_name = operand[0]
-                event_name = operand[1]
-                event_function = mp_phenomenon.phenomenon_implementation(event_name)
-                if event_function is None:
-                    raise Exception("Phenomenon [%s] is not exist." % event_name)
-                if location_name == mp_configure.earth_name:
-                    event_function(self.__world.get_earth())
-                else:
-                    event_function(self.__world.get_location(location_name))
+                self.opcode_event(operand)
             elif opcode == "output":
-                data_type = operand[0]
-                if data_type == "attr":
-                    location_name = operand[1]
-                    attribute_name = operand[2]
-                    if location_name == mp_configure.earth_name:
-                        data = self.__world.get_earth().get_by_name(attribute_name)
-                    else:
-                        data = self.__world.get_location(location_name).get_by_name(attribute_name)
-                    return str(data)
-                elif data_type == "var":
-                    variable_name = operand[0]
-                    data = self.get_variable(variable_name)
-                    return str(data)
-                else:
-                    raise Exception("Invalid data type: %s" % data_type)
+                return self.opcode_output(operand)
             else:
                 raise Exception("Invalid opcode: %s" % opcode)
