@@ -1,0 +1,75 @@
+%grammar_analyzer_name mephisto_question_grammar;
+%symbol_stack_name symbol_stack;
+%generate_comment false;
+%have_line_number false;
+
+start : phrase
+      ;
+
+phrase : phrase atom {$$ = $1 + [$2]}
+       | atom {$$ = [$1]}
+       ;
+
+atom : location_phenomenon
+     | location_attribute
+     | question
+     | action
+     ;
+
+location_phenomenon : location phenomenon {$$ = ("event", $1, mp_helper.normalize_phenomenon($2[1]))}
+                    | phenomenon {$$ = ("event", ("!", "!"), mp_helper.normalize_phenomenon($1[1]))}
+                    ;
+
+location_attribute : location datetime {$$ = ("set", "datetime", $1, $2)}
+                   | location time_literal datetime {$$ = ("set", "datetime", $1, $3)}
+                   | location position {$$ = ("set", "position", $1, $2)}
+                   | location attribute data {$$ = ("set", mp_helper.normalize_attribute($2[1]), $1, $3)}
+                   | location time_attribute time {$$ = ("set", mp_helper.normalize_attribute($2[1]), $1, mp_helper.normalize_time($3[1]))}
+                   | location time_attribute time_literal time {$$ = ("set", mp_helper.normalize_attribute($2[1]), $1, mp_helper.normalize_time($4[1]))}
+                   ;
+
+question : question_body normal_question {$$ = $1}
+         ;
+
+question_body : location attribute {$$ = ("get", $1, $2[1])}
+              | location time_attribute time_literal {$$ = ("get", $1, $2[1])}
+              | location time_literal {$$ = ("get", $1, "local_time")}
+              | location time_attribute city time_literal {$$ = ("indirect", $1, $2[1], $3[1])}
+              | location geo location {$$ = ("geo", mp_helper.normalize_geo($2[1]), $1, $3)}
+              | location location metric {$$ = ("metric", mp_helper.normalize_metric($3[1]), $1, $2)}
+              | location metric location {$$ = ("metric", mp_helper.normalize_metric($2[1]), $1, $3)}
+              | time_literal {$$ = ("get", ("!", "!"), "local_time")}
+              ;
+
+location : city
+         | anonymous
+         ;
+
+datetime : date time {$$ = (mp_helper.normalize_date($1[1]), mp_helper.normalize_time($2[1]))}
+         | date {$$ = mp_helper.normalize_date($1[1])}
+         | time {$$ = mp_helper.normalize_time($1[1])}
+         ;
+
+position : longitude latitude {$$ = (mp_helper.normalize_longitude($1[1]), mp_helper.normalize_latitude($2[1]))}
+         | longitude {$$ = mp_helper.normalize_longitude($1[1])}
+         | latitude {$$ = mp_helper.normalize_latitude($1[1])}
+         ;
+
+data : position
+     | degree {$$ = mp_helper.normalize_degree($1[1])}
+     | number {$$ = int($1[1])}
+     ;
+
+action : time_lapse {$$ = ("lapse", mp_helper.normalize_time_lapse($1[1]))}
+       | geo position {$$ = ("move", $2)}
+       ;
+
+@initial
+@@
+import mp_helper
+@@
+
+@ending
+@@
+return symbol_stack[0]
+@@

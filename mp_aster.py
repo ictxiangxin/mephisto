@@ -48,6 +48,9 @@ class Earth:
     def __str__(self):
         return " ".join([str(self.get_date()), str(self.get_time())])
 
+    def __repr__(self):
+        return self.__str__()
+
     def get_by_name(self, name):
         if name not in self.__name_object_get:
             return None

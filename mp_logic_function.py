@@ -164,10 +164,10 @@ def compute_latitude_by_declination_and_day_length(location, earth):
     declination = earth.get_declination()
     day_length = location.get_day_length().get_time_number() / 2
     declination_number = declination.get_latitude_number()
-    latitude = mp_location.Latitude("0.0.0E")
+    latitude = mp_location.Latitude("0.0.0N")
     if declination_number != 0:
         latitude_number = -math.atan(math.cos(math.pi * day_length / 43200) / math.tan(declination.get_latitude_arc())) / math.pi * 648000
-        latitude.set_latitude_number(latitude_number)
+        latitude.set_latitude_number(int(latitude_number))
     location.only_set_latitude(latitude)
 
 
@@ -193,4 +193,6 @@ function_register = {
     "compute_day_length": compute_day_length,
     "compute_earth_declination_by_location": compute_earth_declination_by_location,
     "compute_time_zone_by_local_time_and_earth_time": compute_time_zone_by_local_time_and_earth_time,
+    "compute_declination_by_noon_sun_height_and_latitude": compute_declination_by_noon_sun_height_and_latitude,
+    "compute_latitude_by_declination_and_day_length": compute_latitude_by_declination_and_day_length,
 }

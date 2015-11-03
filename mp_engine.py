@@ -2,7 +2,7 @@ import copy
 import mp_configure
 import mp_aster
 import mp_location
-import mp_phenomenon
+import mp_handle
 
 
 class World:
@@ -112,19 +112,54 @@ class MephistoEngine:
             attribute_name = operand[3]
             data = self.__world.get_location(location_name).get_by_name(attribute_name)
             self.set_variable(variable_name, data)
+        elif data_type == "entity":
+            entity_name = operand[2]
+            data = self.__world.get_location(entity_name)
+            self.set_variable(variable_name, data)
+        elif data_type == "func":
+            function_name = operand[2]
+            argument_list = [self.get_variable(tmp_name) for tmp_name in operand[3:]]
+            function_function = mp_handle.function_implementation(function_name)
+            if function_function is None:
+                raise Exception("Function [%s] is not exist." % function_name)
+            data = function_function(*argument_list)
+            self.set_variable(variable_name, data)
         else:
             raise Exception("Invalid data type: %s" % data_type)
 
     def opcode_event(self, operand):
         location_name = operand[0]
         event_name = operand[1]
-        event_function = mp_phenomenon.phenomenon_implementation(event_name)
+        event_function = mp_handle.phenomenon_implementation(event_name)
         if event_function is None:
             raise Exception("Phenomenon [%s] is not exist." % event_name)
         if location_name == mp_configure.earth_name:
             event_function(self.__world.get_earth())
         else:
             event_function(self.__world.get_location(location_name))
+
+    def opcode_action(self, operand):
+        location_name = operand[0]
+        action_name = operand[1]
+        data_type = operand[2]
+        if data_type == "const":
+            data = operand[3]
+        elif data_type == "attr":
+            tmp_location_name = operand[3]
+            tmp_attribute_name = operand[4]
+            data = self.__world.get_location(tmp_location_name).get_by_name(tmp_attribute_name)
+        elif data_type == "var":
+            variable_name = operand[3]
+            data = self.get_variable(variable_name)
+        else:
+            raise Exception("Invalid data type: %s" % data_type)
+        action_function = mp_handle.action_implementation(action_name)
+        if action_function is None:
+            raise Exception("Action [%s] is not exist." % action_name)
+        if location_name == mp_configure.earth_name:
+            action_function(self.__world.get_earth(), data)
+        else:
+            action_function(self.__world.get_location(location_name), data)
 
     def opcode_output(self, operand):
         data_type = operand[0]
@@ -137,13 +172,14 @@ class MephistoEngine:
                 data = self.__world.get_location(location_name).get_by_name(attribute_name)
             return str(data)
         elif data_type == "var":
-            variable_name = operand[0]
+            variable_name = operand[1]
             data = self.get_variable(variable_name)
             return str(data)
         else:
             raise Exception("Invalid data type: %s" % data_type)
 
     def execute_code(self, code):
+        output_string = ""
         import mp_mephisto_language
         token_list = mp_mephisto_language.mephisto_language_lexical(code)
         code_list = mp_mephisto_language.mephisto_language_grammar(token_list)
@@ -160,7 +196,10 @@ class MephistoEngine:
                 self.opcode_let(operand)
             elif opcode == "event":
                 self.opcode_event(operand)
+            elif opcode == "action":
+                self.opcode_action(operand)
             elif opcode == "output":
-                return self.opcode_output(operand)
+                output_string += self.opcode_output(operand) + " "
             else:
                 raise Exception("Invalid opcode: %s" % opcode)
+        return output_string

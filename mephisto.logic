@@ -29,4 +29,4 @@ earth.declination, location.latitude -> location.day_length: compute_day_length(
 location.day_length, location.latitude -> earth.declination: compute_earth_declination_by_location(location, earth);
 location.latitude, location.day_length -> earth.declination: compute_earth_declination_by_location(location, earth);
 location.day_length, earth.declination -> location.latitude: compute_latitude_by_declination_and_day_length(location, earth);
-location.declination, earth.day_length -> location.latitude: compute_latitude_by_declination_and_day_length(location, earth);
+earth.declination, location.day_length -> location.latitude: compute_latitude_by_declination_and_day_length(location, earth);

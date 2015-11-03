@@ -144,6 +144,9 @@ class Date:
     def __str__(self):
         return self.get_date_string()
 
+    def __repr__(self):
+        return self.__str__()
+
     def get_date_tuple(self):
         return (int(elem) for elem in self.__date_string.split(self.__sep_string))
 
@@ -228,6 +231,9 @@ class Time:
 
     def __str__(self):
         return self.get_time_string()
+
+    def __repr__(self):
+        return self.__str__()
 
     def get_time_tuple(self):
         return (int(elem) for elem in self.__time_string.split(self.__sep_string))

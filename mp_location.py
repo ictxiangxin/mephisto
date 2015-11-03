@@ -167,6 +167,9 @@ class Longitude:
     def __str__(self):
         return self.get_longitude_string()
 
+    def __repr__(self):
+        return self.__str__()
+
     def get_longitude_tuple(self):
         return (int(elem) for elem in self.__longitude_string.split(self.__sep_string))
 
@@ -246,6 +249,9 @@ class Latitude:
 
     def __str__(self):
         return self.get_latitude_string()
+
+    def __repr__(self):
+        return self.__str__()
 
     def get_latitude_tuple(self):
         return (int(elem) for elem in self.__latitude_string.split(self.__sep_string))
@@ -370,6 +376,9 @@ class Location:
     def __str__(self):
         return "(" + ", ".join([str(self.get_longitude()), str(self.get_latitude())]) + ")"
 
+    def __repr__(self):
+        return self.__str__()
+
     def get_by_name(self, name):
         if name not in self.__name_object_get:
             return None
@@ -476,7 +485,7 @@ class Location:
         self.__noon_sun_height = Latitude(latitude)
 
     def set_noon_sun_height(self, latitude):
-        self.only_set_day_length(latitude)
+        self.only_set_noon_sun_height(latitude)
         mp_logic.mp_logic.change_linkage(self, ("location", "noon_sun_height"))
 
     def get_noon_sun_height(self):
