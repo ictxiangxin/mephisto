@@ -22,7 +22,11 @@ location.time_zone, earth.time -> location.local_time: compute_local_datetime_by
 earth.time, location.time_zone -> location.local_time: compute_local_datetime_by_earth(earth, location);
 location.latitude, earth.declination -> location.noon_sun_height: compute_noon_sun_height(location, earth);
 earth.declination, location.latitude -> location.noon_sun_height: compute_noon_sun_height(location, earth);
+location.noon_sun_height, location.latitude -> earth.declination: compute_declination_by_noon_sun_height_and_latitude(location, earth);
+location.latitude, location.noon_sun_height -> earth.declination: compute_declination_by_noon_sun_height_and_latitude(location, earth);
 location.latitude, earth.declination -> location.day_length: compute_day_length(location, earth);
 earth.declination, location.latitude -> location.day_length: compute_day_length(location, earth);
 location.day_length, location.latitude -> earth.declination: compute_earth_declination_by_location(location, earth);
 location.latitude, location.day_length -> earth.declination: compute_earth_declination_by_location(location, earth);
+location.day_length, earth.declination -> location.latitude: compute_latitude_by_declination_and_day_length(location, earth);
+location.declination, earth.day_length -> location.latitude: compute_latitude_by_declination_and_day_length(location, earth);

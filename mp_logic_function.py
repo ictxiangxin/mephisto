@@ -124,6 +124,24 @@ def compute_noon_sun_height(location, earth):
     location.only_set_noon_sun_height(noon_sun_height)
 
 
+def compute_declination_by_noon_sun_height_and_latitude(location, earth):
+    noon_sun_height = location.get_noon_sun_height()
+    noon_sun_height_number = noon_sun_height.get_latitude_number()
+    latitude = location.get_latitude()
+    latitude_number = latitude.get_latitude_number()
+    declination = mp_location.Latitude("0.0.0N")
+    latitude_difference = 324000 - noon_sun_height_number
+    declination_case1 = latitude_number + latitude_difference
+    declination_case2 = latitude_number - latitude_difference
+    if -84480 < declination_case1 < 84480:
+        declination.set_latitude_number(declination_case1)
+    elif -84480 < declination_case2 < 84480:
+        declination.set_latitude_number(declination_case2)
+    else:
+        return
+    earth.set_declination(declination)
+
+
 def compute_day_length(location, earth):
     declination = earth.get_declination()
     latitude = location.get_latitude()
@@ -140,6 +158,17 @@ def compute_earth_declination_by_location(location, earth):
         declination_number = -math.atan(math.cos(math.pi * day_length / 43200) / math.tan(latitude.get_latitude_arc())) / math.pi * 648000
         declination.set_latitude_number(int(declination_number))
     earth.only_set_declination(declination)
+
+
+def compute_latitude_by_declination_and_day_length(location, earth):
+    declination = earth.get_declination()
+    day_length = location.get_day_length().get_time_number() / 2
+    declination_number = declination.get_latitude_number()
+    latitude = mp_location.Latitude("0.0.0E")
+    if declination_number != 0:
+        latitude_number = -math.atan(math.cos(math.pi * day_length / 43200) / math.tan(declination.get_latitude_arc())) / math.pi * 648000
+        latitude.set_latitude_number(latitude_number)
+    location.only_set_latitude(latitude)
 
 
 def compute_time_zone_by_local_time_and_earth_time(location, earth):
