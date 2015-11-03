@@ -126,7 +126,8 @@ def normalize_attribute(attribute_string):
 
 def normalize_phenomenon(phenomenon_string):
     phenomenon_name_map = {
-        "日影最短": "shortest_shadow_of_sun"
+        "日影最短": "shortest_shadow_of_sun",
+        "正午": "noon_time",
     }
     if phenomenon_string not in phenomenon_name_map:
         return "<Unknown>"

@@ -19,7 +19,11 @@ def normal_solver(question_text):
         for token in token_list:
             if token[0] in ["separator", "$"]:
                 phrase.append(("$", ""))
-                grammar = mp_question_parser.mephisto_question_grammar(phrase)
+                try:
+                    grammar = mp_question_parser.mephisto_question_grammar(phrase)
+                except:
+                    phrase = []
+                    continue
                 for operation in grammar:
                     opcode = operation[0]
                     operand = operation[1:]
@@ -98,10 +102,8 @@ def normal_solver(question_text):
                         action = "(event, \"%s\", \"%s\")" % (location[1], phenomenon)
                         atom_semantic_action.append(action)
                     elif opcode == "lapse":
-                        location = operand[0]
-                        phenomenon = operand[1]
-                        if location[0] == "!":
-                            location = nearest_location
+                        phenomenon = operand[0]
+                        location = nearest_location
                         if location is None:
                             raise Exception("Can not solve this question")
                         location_set.add(location[1])
@@ -110,10 +112,8 @@ def normal_solver(question_text):
                         action = "(action, \"%s\", \"time_forward\", \"const\", \"%s\")" % (location[1], phenomenon)
                         atom_semantic_action.append(action)
                     elif opcode == "move":
-                        location = operand[0]
-                        data = operand[1]
-                        if location[0] == "!":
-                            location = nearest_location
+                        data = operand[0]
+                        location = nearest_location
                         if location is None:
                             raise Exception("Can not solve this question")
                         location_set.add(location[1])

@@ -32,7 +32,7 @@ question : question_body normal_question {$$ = $1}
          ;
 
 question_body : location attribute {$$ = ("get", $1, $2[1])}
-              | location time_attribute time_literal {$$ = ("get", $1, $2[1])}
+              | location time_attribute time_literal {$$ = ("get", $1, mp_helper.normalize_attribute($2[1]))}
               | location time_literal {$$ = ("get", $1, "local_time")}
               | location time_attribute city time_literal {$$ = ("indirect", $1, $2[1], $3[1])}
               | location geo location {$$ = ("geo", mp_helper.normalize_geo($2[1]), $1, $3)}

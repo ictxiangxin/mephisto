@@ -6,8 +6,13 @@ def ph_shortest_shadow_of_sun(location):
     location.set_local_time(mp_date_time.Time("12:00:00"))
 
 
+def ph_noon_time(location):
+    location.set_local_time(mp_date_time.Time("12:00:00"))
+
+
 phenomenon_map = {
     "shortest_shadow_of_sun": ph_shortest_shadow_of_sun,
+    "noon_time": ph_noon_time,
 }
 
 
@@ -20,7 +25,7 @@ def phenomenon_implementation(phenomenon_name):
 def ac_time_forward(location, time):
     local_time = location.get_local_time()
     if local_time is not None:
-        local_time.forward_second(time)
+        local_time.forward_second(int(time))
 
 
 action_map = {
