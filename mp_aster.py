@@ -2,10 +2,12 @@ import mp_location
 import mp_date_time
 import mp_logic
 import mp_configure
+import mp_log
 
 
 class Earth:
     def __init__(self, date=None, time=None, date_sep_string=mp_configure.date_sep_string, time_sep_string=mp_configure.time_sep_string, location_sep_string=mp_configure.location_sep_string, direction_flag=mp_configure.location_direction_flag):
+        mp_log.log.record("Create: date=%s, time=%s, date_sep_string=%s, time_sep_string=%s, location_sep_string=%s, direction_flag=%s" % (str(date), str(time), str(date_sep_string), str(time_sep_string), str(location_sep_string), str(direction_flag)))
         self.__date_sep_string = date_sep_string
         self.__time_sep_string = time_sep_string
         self.__location_sep_string = location_sep_string

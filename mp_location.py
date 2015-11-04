@@ -3,6 +3,7 @@ import mp_date_time
 import mp_aster
 import mp_logic
 import mp_configure
+import mp_log
 
 
 def longitude_string_to_number(longitude_string, sep_string=mp_configure.location_sep_string, direction_flag=mp_configure.location_direction_flag[1]):
@@ -319,6 +320,7 @@ class Latitude:
 
 class Location:
     def __init__(self, longitude=None, latitude=None, sep_string=mp_configure.location_sep_string, direction_flag=mp_configure.location_direction_flag):
+        mp_log.log.record("Create Location: longitude=%s, latitude=%s, sep_string=%s, direction_flag=%s" % (str(longitude), str(latitude), str(sep_string), str(direction_flag)))
         self.__sep_string = sep_string
         self.__longitude_direction_flag = direction_flag[0]
         self.__latitude_direction_flag = direction_flag[-1]

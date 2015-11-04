@@ -67,10 +67,10 @@ class MephistoLog:
         statistics_text += "    Most record caller: %s @ %s [%d]\n" % (top_count_caller[1][1], top_count_caller[1][0], top_count_caller[0])
         statistics_text += "<Top %d record file>\n" % len(top10_count_file)
         for file_count in top10_count_file:
-            statistics_text += "    %d\t\t%s\n" % (file_count[0], file_count[1])
+            statistics_text += "    %-8d %s\n" % (file_count[0], file_count[1])
         statistics_text += "<Top %d record caller>\n" % len(top10_count_file)
         for caller_count in top10_count_caller:
-            statistics_text += "    %d\t\t%s @ %s\n" % (caller_count[0], caller_count[1][1], caller_count[1][0])
+            statistics_text += "    %-8d %s @ %s\n" % (caller_count[0], caller_count[1][1], caller_count[1][0])
         fp.write(statistics_text)
 
 

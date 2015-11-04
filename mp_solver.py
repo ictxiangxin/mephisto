@@ -143,14 +143,14 @@ def normal_solver(question_text):
                         action = "(event, \"%s\", \"%s\")" % (location[1], phenomenon)
                         atom_semantic_action.append(action)
                     elif opcode == "lapse":
-                        phenomenon = operand[0]
+                        time = operand[0]
                         location = nearest_location
                         if location is None:
                             raise Exception("Can not solve this question")
                         location_set.add(location[1])
                         if location[0] == "city":
                             city_set.add(location[1])
-                        action = "(action, \"%s\", \"time_forward\", \"const\", \"%s\")" % (location[1], phenomenon)
+                        action = "(action, \"%s\", \"time_forward\", \"const\", \"%s\")" % (location[1], time)
                         atom_semantic_action.append(action)
                     elif opcode == "move":
                         data = operand[0]
