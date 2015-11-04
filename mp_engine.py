@@ -3,6 +3,7 @@ import mp_configure
 import mp_aster
 import mp_location
 import mp_handle
+import mp_log
 
 
 class World:
@@ -26,12 +27,15 @@ class World:
         return self.__earth
 
     def set_earth_attribute(self, attribute_name, data):
+        mp_log.log.record("Set Earth Attribute: \"%s\" = %s" % (attribute_name, str(data)))
         self.__earth.set_by_name(attribute_name, data)
 
     def set_earth_static_attribute(self, attribute_name):
+        mp_log.log.record("Set Earth Attribute Static: \"%s\"" % attribute_name)
         self.__earth.set_static_attribute(attribute_name)
 
     def add_location(self, name, location):
+        mp_log.log.record("Add Location Entity: \"%s\"@%s" % (name, id(location)))
         if not isinstance(location, mp_location.Location):
             raise Exception("Import object is not Location, type: %s" % type(location))
         self.__location[name] = location
@@ -46,10 +50,12 @@ class World:
         return list(self.__location)
 
     def set_location_attribute(self, name, attribute_name, data):
+        mp_log.log.record("Set Location Attribute: (\"%s\", \"%s\") = %s" % (name, attribute_name, str(data)))
         if name in self.__location:
             self.__location[name].set_by_name(attribute_name, data)
 
     def set_location_static_attribute(self, name, attribute_name):
+        mp_log.log.record("Set Location Attribute Static: (\"%s\", \"%s\")" % (name, attribute_name))
         if name in self.__location:
             self.__location[name].set_static_attribute(attribute_name)
 
@@ -182,10 +188,13 @@ class MephistoEngine:
         output_string = ""
         import mp_mephisto_language
         token_list = mp_mephisto_language.mephisto_language_lexical(code)
+        mp_log.log.record("Token List: %s" % str(token_list))
         code_list = mp_mephisto_language.mephisto_language_grammar(token_list)
+        mp_log.log.record("Code List: %s" % str(code_list))
         for each_code in code_list:
             opcode = each_code[0]
             operand = each_code[1]
+            mp_log.log.record("Operation: %s->%s" % (str(opcode), str(operand)))
             if opcode == "location":
                 self.opcode_location(operand)
             elif opcode == "init":

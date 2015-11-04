@@ -4,12 +4,14 @@ import mp_engine
 import mp_date_time
 import mp_location
 import mp_data
+import mp_log
 
 
 def normal_solver(question_text):
     try:
         engine = mp_engine.MephistoEngine()
         token_list = mp_tokenize.tokenize(question_text)
+        mp_log.log.record("Token List: %s" % str(token_list))
         city_set = set()
         location_set = set()
         atom_semantic_action = []
@@ -20,13 +22,16 @@ def normal_solver(question_text):
             if token[0] in ["separator", "$"]:
                 phrase.append(("$", ""))
                 try:
+                    mp_log.log.record("Phrase Token List: %s" % str(phrase))
                     grammar = mp_question_parser.mephisto_question_grammar(phrase)
+                    mp_log.log.record("Grammar: %s" % str(grammar))
                 except:
                     phrase = []
                     continue
                 for operation in grammar:
                     opcode = operation[0]
                     operand = operation[1:]
+                    mp_log.log.record("Operation: %s->%s" % (str(opcode), str(operand)))
                     if opcode == "set":
                         data_type = operand[0]
                         location = operand[1]
@@ -77,6 +82,25 @@ def normal_solver(question_text):
                         else:
                             action = "(set, \"%s\", \"%s\", \"const\", \"%s\")" % (location[1], data_type, str(data))
                             atom_semantic_action.append(action)
+                    elif opcode == "indirect_set":
+                        location = operand[0]
+                        attribute = operand[1]
+                        city = operand[2]
+                        time = operand[3]
+                        nearest_location = location
+                        location_set.add(location[1])
+                        location_set.add(city[1])
+                        if location[0] == "city":
+                            city_set.add(location[1])
+                            city_set.add(city[1])
+                        action = "(set, \"%s\", \"local_time\", \"const\", \"%s\")" % (city[1], str(time))
+                        atom_semantic_action.append(action)
+                        temp_number = temp_variable_number
+                        temp_variable_number += 1
+                        action = "(let, \"tmp%d\", \"attr\", \"%s\", \"local_time\")" % (temp_number, location[1])
+                        atom_semantic_action.append(action)
+                        action = "(set, \"%s\", \"%s\", \"var\", \"tmp%d\")" % (location[1], attribute, temp_number)
+                        atom_semantic_action.append(action)
                     elif opcode == "get":
                         location = operand[0]
                         attribute = operand[1]
@@ -88,6 +112,23 @@ def normal_solver(question_text):
                         if location[0] == "city":
                             city_set.add(location[1])
                         action = "(output, \"attr\", \"%s\", \"%s\")" % (location[1], attribute)
+                        atom_semantic_action.append(action)
+                    elif opcode == "indirect_get":
+                        location = operand[0]
+                        attribute = operand[1]
+                        city = operand[2]
+                        location_set.add(location[1])
+                        location_set.add(city[1])
+                        if location[0] == "city":
+                            city_set.add(location[1])
+                            city_set.add(city[1])
+                        temp_number = temp_variable_number
+                        temp_variable_number += 1
+                        action = "(let, \"tmp%d\", \"attr\", \"%s\", \"%s\")" % (temp_number, location[1], attribute)
+                        atom_semantic_action.append(action)
+                        action = "(set, \"%s\", \"local_time\", \"var\", \"tmp%d\")" % (location[1], temp_number)
+                        atom_semantic_action.append(action)
+                        action = "(output, \"attr\", \"%s\", \"local_time\")" % city[1]
                         atom_semantic_action.append(action)
                     elif opcode == "event":
                         location = operand[0]
@@ -208,7 +249,10 @@ def normal_solver(question_text):
             action = "(location, \"%s\")" % location
             atom_semantic_action.insert(0, action)
         final_atom_semantic_action = "\n".join(atom_semantic_action)
+        mp_log.log.record(final_atom_semantic_action)
         result = engine.execute_code(final_atom_semantic_action)
+        if result == "":
+            return None
         return result
     except Exception:
         return None

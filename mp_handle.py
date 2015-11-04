@@ -1,12 +1,15 @@
 import mp_date_time
 import mp_location
+import mp_log
 
 
 def ph_shortest_shadow_of_sun(location):
+    mp_log.log.record("Location: %d" % id(location))
     location.set_local_time(mp_date_time.Time("12:00:00"))
 
 
 def ph_noon_time(location):
+    mp_log.log.record("Location: %d" % id(location))
     location.set_local_time(mp_date_time.Time("12:00:00"))
 
 
@@ -23,9 +26,11 @@ def phenomenon_implementation(phenomenon_name):
 
 
 def ac_time_forward(location, time):
+    mp_log.log.record("Location: %s, Time: %s" % (id(location), str(time)))
     local_time = location.get_local_time()
     if local_time is not None:
         local_time.forward_second(int(time))
+        location.set_local_time(local_time)
 
 
 action_map = {
@@ -40,6 +45,7 @@ def action_implementation(action_name):
 
 
 def fc_distance(location_a, location_b):
+    mp_log.log.record("Location A: %s, Location B: %s" % (id(location_a), id(location_b)))
     distance = mp_location.location_distance(location_a, location_b)
     return distance
 

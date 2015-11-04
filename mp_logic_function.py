@@ -1,22 +1,26 @@
 import mp_date_time
 import mp_location
+import mp_log
 import copy
 import math
 
 
 def compute_time_zone_by_longitude(location):
+    mp_log.log.record("Location: %s" % str(id(location)))
     longitude = location.get_longitude().get_longitude_number()
     time_zone = int(longitude / 15)
     location.only_set_time_zone(time_zone)
 
 
 def compute_longitude_by_time_zone(location):
+    mp_log.log.record("Location: %s" % str(id(location)))
     time_zone = location.get_time_zone()
     longitude = time_zone * 15
     location.only_set_longitude(longitude)
 
 
 def compute_sunrise_time_by_day_length(location):
+    mp_log.log.record("Location: %s" % str(id(location)))
     day_length = location.get_day_length()
     day_length_number = day_length.get_time_number()
     sunrise_time = int(43200 - day_length_number / 2)
@@ -24,6 +28,7 @@ def compute_sunrise_time_by_day_length(location):
 
 
 def compute_day_length_by_sunrise_time(location):
+    mp_log.log.record("Location: %s" % str(id(location)))
     sunrise_time = location.get_sunrise_time()
     sunrise_time_number = sunrise_time.get_time_number()
     day_length = 86400 - 2 * sunrise_time_number
@@ -31,6 +36,7 @@ def compute_day_length_by_sunrise_time(location):
 
 
 def compute_sunset_time_by_day_length(location):
+    mp_log.log.record("Location: %s" % str(id(location)))
     day_length = location.get_day_length()
     day_length_number = day_length.get_time_number()
     sunset_time = int(43200 + day_length_number / 2)
@@ -38,6 +44,7 @@ def compute_sunset_time_by_day_length(location):
 
 
 def compute_day_length_by_sunset_time(location):
+    mp_log.log.record("Location: %s" % str(id(location)))
     sunset_time = location.get_sunset_time()
     sunset_time_number = sunset_time.get_time_number()
     day_length = 2 * sunset_time_number - 86400
@@ -45,6 +52,7 @@ def compute_day_length_by_sunset_time(location):
 
 
 def compute_earth_datetime_by_local_datetime(location, earth):
+    mp_log.log.record("Location: %s, Earth: %s" % (str(id(location)), str(id(earth))))
     local_date = location.get_local_date()
     local_time = location.get_local_time()
     if local_date is not None:
@@ -71,6 +79,7 @@ def compute_earth_datetime_by_local_datetime(location, earth):
 
 
 def compute_declination_by_date(earth):
+    mp_log.log.record("Earth: %s" % str(id(earth)))
     y, m, d = earth.get_date().get_date_tuple()
     ordinal_number = mp_date_time.month_to_number(m, mp_date_time.is_leap_year(y)) + d
     b = 2 * math.pi * (ordinal_number - 1) / 365
@@ -81,6 +90,7 @@ def compute_declination_by_date(earth):
 
 
 def compute_equinox_by_date(earth):
+    mp_log.log.record("Earth: %s" % str(id(earth)))
     y, m, d = earth.get_date().get_date_tuple()
     yy = y % 100
     d = int(yy * 0.2422 + 20.646) - int(yy / 4)
@@ -93,6 +103,7 @@ def compute_equinox_by_date(earth):
 
 
 def compute_local_datetime_by_earth(earth, location):
+    mp_log.log.record("Location: %s, Earth: %s" % (str(id(location)), str(id(earth))))
     earth_date = earth.get_date()
     earth_time = earth.get_time()
     if earth_date is not None:
@@ -119,12 +130,14 @@ def compute_local_datetime_by_earth(earth, location):
 
 
 def compute_noon_sun_height(location, earth):
+    mp_log.log.record("Location: %s, Earth: %s" % (str(id(location)), str(id(earth))))
     latitude_difference = abs(location.get_latitude().get_latitude_number() - earth.get_declination().get_latitude_number())
     noon_sun_height = 324000 - latitude_difference
     location.only_set_noon_sun_height(noon_sun_height)
 
 
 def compute_declination_by_noon_sun_height_and_latitude(location, earth):
+    mp_log.log.record("Location: %s, Earth: %s" % (str(id(location)), str(id(earth))))
     noon_sun_height = location.get_noon_sun_height()
     noon_sun_height_number = noon_sun_height.get_latitude_number()
     latitude = location.get_latitude()
@@ -143,6 +156,7 @@ def compute_declination_by_noon_sun_height_and_latitude(location, earth):
 
 
 def compute_day_length(location, earth):
+    mp_log.log.record("Location: %s, Earth: %s" % (str(id(location)), str(id(earth))))
     declination = earth.get_declination()
     latitude = location.get_latitude()
     day_length = 2 * int(43200 * math.acos(-math.tan(declination.get_latitude_arc()) * math.tan(latitude.get_latitude_arc())) / math.pi)
@@ -150,6 +164,7 @@ def compute_day_length(location, earth):
 
 
 def compute_earth_declination_by_location(location, earth):
+    mp_log.log.record("Location: %s, Earth: %s" % (str(id(location)), str(id(earth))))
     latitude = location.get_latitude()
     day_length = location.get_day_length().get_time_number() / 2
     declination = mp_location.Latitude("0.0.0N")
@@ -161,6 +176,7 @@ def compute_earth_declination_by_location(location, earth):
 
 
 def compute_latitude_by_declination_and_day_length(location, earth):
+    mp_log.log.record("Location: %s, Earth: %s" % (str(id(location)), str(id(earth))))
     declination = earth.get_declination()
     day_length = location.get_day_length().get_time_number() / 2
     declination_number = declination.get_latitude_number()
@@ -172,6 +188,7 @@ def compute_latitude_by_declination_and_day_length(location, earth):
 
 
 def compute_time_zone_by_local_time_and_earth_time(location, earth):
+    mp_log.log.record("Location: %s, Earth: %s" % (str(id(location)), str(id(earth))))
     local_time = location.get_local_time()
     earth_time = earth.get_time()
     time_zone = (local_time.get_time_number() - earth_time.get_time_number()) % 43200

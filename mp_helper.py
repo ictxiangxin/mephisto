@@ -1,9 +1,11 @@
 import mp_configure
 import mp_date_time
 import mp_location
+import mp_log
 
 
 def normalize_date(date_string):
+    mp_log.log.record("Normalize Date: \"%s\"" % date_string)
     if "年" not in date_string:
         date_string = "2015年" + date_string
     date_string = date_string.replace("年", mp_configure.date_sep_string)
@@ -14,6 +16,7 @@ def normalize_date(date_string):
 
 
 def normalize_time(time_string):
+    mp_log.log.record("Normalize Time: \"%s\"" % time_string)
     if "时" in time_string or "点" in time_string:
         if "分" not in time_string:
             time_string += "00分"
@@ -31,6 +34,7 @@ def normalize_time(time_string):
 
 
 def normalize_time_lapse(time_string):
+    mp_log.log.record("Normalize Time Lapse: \"%s\"" % time_string)
     if "分" not in time_string:
         time_string += "00分"
     if "秒" not in time_string:
@@ -44,6 +48,7 @@ def normalize_time_lapse(time_string):
 
 
 def normalize_degree(degree_string):
+    mp_log.log.record("Normalize Degree: \"%s\"" % degree_string)
     if "′" not in degree_string:
         degree_string += "00′"
     if "″" not in degree_string:
@@ -57,6 +62,7 @@ def normalize_degree(degree_string):
 
 
 def normalize_longitude(longitude_string):
+    mp_log.log.record("Normalize Longitude: \"%s\"" % longitude_string)
     degree_string = longitude_string[:-1]
     direction = longitude_string[-1]
     if "′" not in degree_string:
@@ -75,6 +81,7 @@ def normalize_longitude(longitude_string):
 
 
 def normalize_latitude(latitude_string):
+    mp_log.log.record("Normalize Latitude: \"%s\"" % latitude_string)
     degree_string = latitude_string[:-1]
     direction = latitude_string[-1]
     if "′" not in degree_string:
