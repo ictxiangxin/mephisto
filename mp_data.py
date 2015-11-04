@@ -4195,6 +4195,7 @@ mp_city_to_coordinate = {
 
 
 def city_coordinate(city):
+    city = city.replace("_", "")
     if city not in mp_city_to_coordinate:
         return False
     return mp_city_to_coordinate[city]

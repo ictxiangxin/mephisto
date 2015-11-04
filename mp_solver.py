@@ -85,14 +85,14 @@ def normal_solver(question_text):
                     elif opcode == "indirect_set":
                         location = operand[0]
                         attribute = operand[1]
-                        city = operand[2]
+                        city = "_" + operand[2]
                         time = operand[3]
                         nearest_location = location
                         location_set.add(location[1])
                         location_set.add(city[1])
                         if location[0] == "city":
                             city_set.add(location[1])
-                            city_set.add(city[1])
+                        city_set.add(city[1])
                         action = "(set, \"%s\", \"local_time\", \"const\", \"%s\")" % (city[1], str(time))
                         atom_semantic_action.append(action)
                         temp_number = temp_variable_number
@@ -116,12 +116,12 @@ def normal_solver(question_text):
                     elif opcode == "indirect_get":
                         location = operand[0]
                         attribute = operand[1]
-                        city = operand[2]
+                        city = "_" + operand[2]
                         location_set.add(location[1])
                         location_set.add(city[1])
                         if location[0] == "city":
                             city_set.add(location[1])
-                            city_set.add(city[1])
+                        city_set.add(city[1])
                         temp_number = temp_variable_number
                         temp_variable_number += 1
                         action = "(let, \"tmp%d\", \"attr\", \"%s\", \"%s\")" % (temp_number, location[1], attribute)
