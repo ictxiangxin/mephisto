@@ -84,14 +84,24 @@ def latitude_string_distance(latitude_string_a, latitude_string_b, sep_string=mp
     return latitude_number_distance(latitude_number_a, latitude_number_b)
 
 
-def location_arc_distance(location_a, location_b):
-    longitude_distance = longitude_number_distance(location_a.get_longitude().get_longitude_number(), location_b.get_longitude().get_longitude_number())
-    latitude_distance = latitude_number_distance(location_a.get_latitude().get_latitude_number(), location_b.get_latitude().get_latitude_number())
-    return (longitude_distance ** 2 + latitude_distance ** 2) ** 0.5 / 3600 / 360 * 2 * math.pi
+def latitude_weight(latitude_arc):
+    return 1 / (abs(math.cos(latitude_arc)) + 0.000000001)
 
 
 def location_distance(location_a, location_b):
-    return int(location_arc_distance(location_a, location_b) * 6371393)
+    earth_radius = 6378137
+    longitude_a = location_a.get_longitude().get_longitude_arc()
+    latitude_a = location_a.get_latitude().get_latitude_arc()
+    longitude_b = location_b.get_longitude().get_longitude_arc()
+    latitude_b = location_b.get_latitude().get_latitude_arc()
+    w_a = latitude_weight(latitude_a)
+    w_b = latitude_weight(latitude_b)
+    middle_latitude = (w_a * latitude_a + w_b * latitude_b) / (w_a + w_b)
+    longitude_radius = earth_radius * math.cos(middle_latitude)
+    longitude_distance = (abs(longitude_a - longitude_b) % math.pi) * longitude_radius
+    latitude_distance = abs(latitude_a - latitude_b) * earth_radius
+    distance = math.sqrt(longitude_distance ** 2 + latitude_distance ** 2)
+    return int(distance)
 
 
 def location_direction(source_location, target_location):

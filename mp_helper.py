@@ -63,6 +63,12 @@ def normalize_degree(degree_string):
 
 def normalize_longitude(longitude_string):
     mp_log.log.record("Normalize Longitude: \"%s\"" % longitude_string)
+    if "东经" in longitude_string:
+        longitude_string = longitude_string[2:]
+        longitude_string += mp_configure.location_direction_flag[0][0]
+    if "西经" in longitude_string:
+        longitude_string = longitude_string[2:]
+        longitude_string += mp_configure.location_direction_flag[0][1]
     degree_string = longitude_string[:-1]
     direction = longitude_string[-1]
     if "′" not in degree_string:
@@ -82,6 +88,12 @@ def normalize_longitude(longitude_string):
 
 def normalize_latitude(latitude_string):
     mp_log.log.record("Normalize Latitude: \"%s\"" % latitude_string)
+    if "北纬" in latitude_string:
+        latitude_string = latitude_string[2:]
+        latitude_string += mp_configure.location_direction_flag[1][0]
+    if "南纬" in latitude_string:
+        latitude_string = latitude_string[2:]
+        latitude_string += mp_configure.location_direction_flag[1][1]
     degree_string = latitude_string[:-1]
     direction = latitude_string[-1]
     if "′" not in degree_string:

@@ -17,6 +17,7 @@ def normal_solver(question_text):
         atom_semantic_action = []
         nearest_location = None
         temp_variable_number = 0
+        substitute_number = 0
         phrase = []
         for token in token_list:
             if token[0] in ["separator", "$"]:
@@ -60,6 +61,12 @@ def normal_solver(question_text):
                                 action = "(set, \"%s\", \"local_date\", \"const\", \"%s\")" % (location[1], str(date))
                                 atom_semantic_action.append(action)
                         elif data_type == "position":
+                            if location[0] == "city":
+                                substitute = "substitute%d" % substitute_number
+                                substitute_number += 1
+                                location = ("anonymous", substitute)
+                                location_set.add(substitute)
+                                nearest_location = location
                             if location[0] == "anonymous":
                                 if isinstance(data, tuple):
                                     longitude = data[0]
@@ -85,15 +92,15 @@ def normal_solver(question_text):
                     elif opcode == "indirect_set":
                         location = operand[0]
                         attribute = operand[1]
-                        city = "_" + operand[2]
+                        city = operand[2]
                         time = operand[3]
                         nearest_location = location
                         location_set.add(location[1])
-                        location_set.add(city[1])
+                        location_set.add("_" + city[1])
                         if location[0] == "city":
                             city_set.add(location[1])
-                        city_set.add(city[1])
-                        action = "(set, \"%s\", \"local_time\", \"const\", \"%s\")" % (city[1], str(time))
+                        city_set.add("_" + city[1])
+                        action = "(set, \"%s\", \"local_time\", \"const\", \"%s\")" % ("_" + city[1], str(time))
                         atom_semantic_action.append(action)
                         temp_number = temp_variable_number
                         temp_variable_number += 1
@@ -116,19 +123,19 @@ def normal_solver(question_text):
                     elif opcode == "indirect_get":
                         location = operand[0]
                         attribute = operand[1]
-                        city = "_" + operand[2]
+                        city = operand[2]
                         location_set.add(location[1])
-                        location_set.add(city[1])
+                        location_set.add("_" + city[1])
                         if location[0] == "city":
                             city_set.add(location[1])
-                        city_set.add(city[1])
+                        city_set.add("_" + city[1])
                         temp_number = temp_variable_number
                         temp_variable_number += 1
                         action = "(let, \"tmp%d\", \"attr\", \"%s\", \"%s\")" % (temp_number, location[1], attribute)
                         atom_semantic_action.append(action)
                         action = "(set, \"%s\", \"local_time\", \"var\", \"tmp%d\")" % (location[1], temp_number)
                         atom_semantic_action.append(action)
-                        action = "(output, \"attr\", \"%s\", \"local_time\")" % city[1]
+                        action = "(output, \"attr\", \"%s\", \"local_time\")" % ("_" + city[1])
                         atom_semantic_action.append(action)
                     elif opcode == "event":
                         location = operand[0]
