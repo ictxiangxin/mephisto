@@ -19,9 +19,18 @@ def normal_solver(question_text):
         temp_variable_number = 0
         substitute_number = 0
         phrase = []
+        have_location = False
+        refer_location = None
         for token in token_list:
+            if token[0] in ["city", "anonymous"]:
+                refer_location = token
+                have_location = True
             if token[0] in ["separator", "$"]:
                 phrase.append(("$", ""))
+                if not have_location:
+                    phrase.insert(0, refer_location)
+                else:
+                    have_location = False
                 try:
                     mp_log.log.record("Phrase Token List: %s" % str(phrase))
                     grammar = mp_question_parser.mephisto_question_grammar(phrase)

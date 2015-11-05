@@ -2,7 +2,7 @@ import re
 import mp_data
 
 token_tuple = [
-    ("attribute",       r"经度|纬度|经纬度|昼长|夜长|正午太阳高度"),
+    ("attribute",       r"经度|纬度|经纬度|昼长|夜长|正午太阳高度|时区"),
     ("phenomenon",      r"日影最短|极昼|极夜|圆月|正午"),
     ("time_attribute",  r"日出|日落"),
     ("time",            r"[0-9]+(时|点)([0-9]+分){0,1}([0-9]+秒){0,1}|[0-9]{1,2}:[0-9]{1,2}(:[0-9]{1,2}){0,1}"),
@@ -19,8 +19,8 @@ token_tuple = [
     ("metric",          r"距离"),
     ("normal_question", r"是？|为？|？"),
     ("judge",           r"正确|错误"),
+    ("anonymous",       r"[a-zA-Z甲乙丙丁戊己庚辛壬癸][点地]|黄河站|长城站|泰山站|昆仑站|中山站"),
     ("city",            r"|".join(list(mp_data.mp_city_to_coordinate))),
-    ("anonymous",       r"[a-zA-Z甲乙丙丁戊己庚辛壬癸][点地]"),
     ("separator",       r"[，。；]"),
     ("invalid",         r"."),
 ]

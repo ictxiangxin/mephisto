@@ -132,7 +132,7 @@ def location_eight_party_by_direction_tuple(direction_tuple, direction_flag=mp_c
             return direction_flag[0][-1]
     else:
         cot = abs(longitude_difference / latitude_difference)
-        if 0.4142135623730951 <= cot <= 2.414213562373095:
+        if 0.08748866352592 <= cot <= 11.430052302761:
             direction_str = ""
             if longitude_difference > 0:
                 direction_str += direction_flag[0][0]
@@ -348,6 +348,7 @@ class Location:
             "longitude": self.get_longitude,
             "latitude": self.get_latitude,
             "time_zone": self.get_time_zone,
+            "time_zone_text": self.get_time_zone_text,
             "local_date": self.get_local_date,
             "local_time": self.get_local_time,
             "bind_earth": self.get_bind_earth,
@@ -446,6 +447,19 @@ class Location:
     def get_time_zone(self):
         return self.__time_zone
 
+    def get_time_zone_text(self):
+        time_zone = self.__time_zone
+        time_zone_text = ""
+        if time_zone is None:
+            return None
+        time_zone_normal = int(time_zone / 3600)
+        if time_zone_normal < 0:
+            time_zone_text += "西"
+        else:
+            time_zone_text += "东"
+        time_zone_text += str(time_zone_normal) + "区"
+        return time_zone_text
+
     def only_set_local_date(self, date):
         self.__local_date = mp_date_time.Date(date)
 
@@ -480,9 +494,6 @@ class Location:
 
     def compute_greenwich_mean_time(self, time):
         time.backward_second(self.get_time_zone())
-
-    def compute_arc_distance(self, target_location):
-        return location_arc_distance(self, target_location)
 
     def compute_distance(self, target_location):
         return location_distance(self, target_location)

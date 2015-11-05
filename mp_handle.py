@@ -49,8 +49,16 @@ def fc_distance(location_a, location_b):
     distance = mp_location.location_distance(location_a, location_b)
     return distance
 
+
+def fc_direction(location_a, location_b):
+    mp_log.log.record("Location A: %s, Location B: %s" % (id(location_a), id(location_b)))
+    direction = mp_location.location_eight_party_by_direction_tuple(mp_location.location_direction(location_a, location_b))
+    return direction
+
+
 function_map = {
     "distance": fc_distance,
+    "direction": fc_direction,
 }
 
 

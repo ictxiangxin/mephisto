@@ -159,7 +159,11 @@ def compute_day_length(location, earth):
     mp_log.log.record("Location: %s, Earth: %s" % (str(id(location)), str(id(earth))))
     declination = earth.get_declination()
     latitude = location.get_latitude()
-    day_length = 2 * int(43200 * math.acos(-math.tan(declination.get_latitude_arc()) * math.tan(latitude.get_latitude_arc())) / math.pi)
+    cos_value = -math.tan(declination.get_latitude_arc()) * math.tan(latitude.get_latitude_arc())
+    if -1 <= cos_value <= 1:
+        day_length = 2 * int(43200 * math.acos(cos_value) / math.pi)
+    else:
+        day_length = 86400
     location.only_set_day_length(day_length)
 
 

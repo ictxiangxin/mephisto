@@ -137,6 +137,7 @@ def normalize_attribute(attribute_string):
         "正午太阳高度": "noon_sun_height",
         "经度": "longitude",
         "维度": "latitude",
+        "时区": "time_zone_text",
     }
     if attribute_string not in attribute_name_map:
         return "<Unknown>"
