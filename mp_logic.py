@@ -291,6 +291,7 @@ class MephistoLogic:
                 if condition[0] not in self.__logic:
                     self.__logic[condition[0]] = {}
                 self.__logic[condition[0]][result] = ("multi", condition[1:], function)
+        self.__logic_text = ""
 
     def decide_attribute(self, attribute):
         if attribute not in self.__logic:

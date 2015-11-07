@@ -38,6 +38,7 @@ class World:
         mp_log.log.record("Add Location Entity: \"%s\"@%s" % (name, id(location)))
         if not isinstance(location, mp_location.Location):
             raise Exception("Import object is not Location, type: %s" % type(location))
+        location.set_location_name(name)
         self.__location[name] = location
         location.bind_earth(self.__earth)
 

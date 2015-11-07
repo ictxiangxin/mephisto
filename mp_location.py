@@ -331,6 +331,7 @@ class Latitude:
 class Location:
     def __init__(self, longitude=None, latitude=None, sep_string=mp_configure.location_sep_string, direction_flag=mp_configure.location_direction_flag):
         mp_log.log.record("Create Location: longitude=%s, latitude=%s, sep_string=%s, direction_flag=%s" % (str(longitude), str(latitude), str(sep_string), str(direction_flag)))
+        self.__name = "Location_%s" % id(self)
         self.__sep_string = sep_string
         self.__longitude_direction_flag = direction_flag[0]
         self.__latitude_direction_flag = direction_flag[-1]
@@ -391,6 +392,12 @@ class Location:
 
     def __repr__(self):
         return self.__str__()
+
+    def set_location_name(self, name):
+        self.__name = str(name)
+
+    def get_location_name(self):
+        return self.__name
 
     def get_by_name(self, name):
         if name not in self.__name_object_get:
