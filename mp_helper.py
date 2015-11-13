@@ -152,3 +152,16 @@ def normalize_phenomenon(phenomenon_string):
     if phenomenon_string not in phenomenon_name_map:
         return "<Unknown>"
     return phenomenon_name_map[phenomenon_string]
+
+
+def readable_result(data):
+    if isinstance(data, int):
+        return str(data) + "米"
+    elif isinstance(data, str):
+        data = data.replace(mp_configure.location_direction_flag[0][0], "东")
+        data = data.replace(mp_configure.location_direction_flag[0][1], "西")
+        data = data.replace(mp_configure.location_direction_flag[1][0], "北")
+        data = data.replace(mp_configure.location_direction_flag[1][1], "南")
+        return data + "方"
+    else:
+        return str(data)

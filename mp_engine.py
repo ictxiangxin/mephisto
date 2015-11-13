@@ -3,6 +3,7 @@ import mp_configure
 import mp_aster
 import mp_location
 import mp_handle
+import mp_helper
 import mp_log
 
 
@@ -177,11 +178,11 @@ class MephistoEngine:
                 data = self.__world.get_earth().get_by_name(attribute_name)
             else:
                 data = self.__world.get_location(location_name).get_by_name(attribute_name)
-            return str(data)
+            return mp_helper.readable_result(data)
         elif data_type == "var":
             variable_name = operand[1]
             data = self.get_variable(variable_name)
-            return str(data)
+            return mp_helper.readable_result(data)
         else:
             raise Exception("Invalid data type: %s" % data_type)
 
